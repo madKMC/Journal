@@ -98,7 +98,7 @@ const convertHtmlToFormattedText = (html: string): Array<{text: string, style: '
           if (quoteText.trim()) {
             result.push({ text: `"${quoteText.trim()}"`, style: 'italic', type: 'quote' })
           }
-          result.push({ text: '', style: 'normal', type: 'newline' })
+          //result.push({ text: '', style: 'normal', type: 'newline' })
           break
         default:
           for (const child of Array.from(element.childNodes)) {
