@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Edit, Lock, Globe, Calendar, Download } from 'lucide-react'
+import { Edit, Lock, Globe, Calendar, Download, X } from 'lucide-react'
 import { format } from 'date-fns'
 import { generateEntryPDF } from '@/lib/pdfGenerator'
 import { toast } from 'sonner'
@@ -97,62 +97,72 @@ export function EntryView({ entry, open, onClose, onEdit }: EntryViewProps) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="space-y-4">
-          <div className="flex items-start justify-between">
-            <div className="flex-1 min-w-0">
-              <DialogTitle className="text-2xl font-bold text-charcoal-900 mb-3">
-                {entry.title}
-              </DialogTitle>
-              <div className="flex items-center gap-3 flex-wrap">
-                <div className="flex items-center text-mutedgray-500">
-                  <Calendar className="h-4 w-4 mr-1" />
-                  {format(new Date(entry.created_at), 'MMMM d, yyyy')}
-                </div>
-                {entry.mood && (
-                  <Badge variant="secondary" className={`${moodColors[entry.mood] || 'bg-gray-100 text-gray-800'} border`}>
-                    {moodEmojis[entry.mood] || '😐'} {moodLabels[entry.mood] || entry.mood}
-                  </Badge>
+        {/* Custom header with proper button positioning */}
+        <div className="flex items-start justify-between p-6 pb-4">
+          <div className="flex-1 min-w-0 pr-4">
+            <h2 className="text-2xl font-bold text-charcoal-900 mb-3">
+              {entry.title}
+            </h2>
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex items-center text-mutedgray-500">
+                <Calendar className="h-4 w-4 mr-1" />
+                {format(new Date(entry.created_at), 'MMMM d, yyyy')}
+              </div>
+              {entry.mood && (
+                <Badge variant="secondary" className={`${moodColors[entry.mood] || 'bg-gray-100 text-gray-800'} border`}>
+                  {moodEmojis[entry.mood] || '😐'} {moodLabels[entry.mood] || entry.mood}
+                </Badge>
+              )}
+              <div className="flex items-center text-sm text-mutedgray-500">
+                {entry.is_private ? (
+                  <>
+                    <Lock className="h-4 w-4 mr-1" />
+                    Private
+                  </>
+                ) : (
+                  <>
+                    <Globe className="h-4 w-4 mr-1" />
+                    Public
+                  </>
                 )}
-                <div className="flex items-center text-sm text-mutedgray-500">
-                  {entry.is_private ? (
-                    <>
-                      <Lock className="h-4 w-4 mr-1" />
-                      Private
-                    </>
-                  ) : (
-                    <>
-                      <Globe className="h-4 w-4 mr-1" />
-                      Public
-                    </>
-                  )}
-                </div>
               </div>
             </div>
-            <div className="flex items-center gap-2 ml-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleGeneratePDF}
-                disabled={generatingPDF}
-                className="border-mistblue-200 text-mistblue-700 hover:bg-mistblue-50"
-              >
-                <Download className="h-4 w-4 mr-1" />
-                {generatingPDF ? 'Generating...' : 'PDF'}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onEdit(entry)}
-                className="border-sage-200 text-sage-700 hover:bg-sage-50"
-              >
-                <Edit className="h-4 w-4 mr-1" />
-                Edit
-              </Button>
-            </div>
           </div>
-        </DialogHeader>
+          
+          {/* Action buttons */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleGeneratePDF}
+              disabled={generatingPDF}
+              className="border-mistblue-200 text-mistblue-700 hover:bg-mistblue-50"
+            >
+              <Download className="h-4 w-4 mr-1" />
+              {generatingPDF ? 'Generating...' : 'PDF'}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onEdit(entry)}
+              className="border-sage-200 text-sage-700 hover:bg-sage-50"
+            >
+              <Edit className="h-4 w-4 mr-1" />
+              Edit
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="text-mutedgray-500 hover:text-charcoal-700 hover:bg-sage-50"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
 
-        <div className="space-y-6">
+        {/* Content */}
+        <div className="px-6 pb-6 space-y-6">
           {entry.image_url && (
             <div className="w-full">
               <img
