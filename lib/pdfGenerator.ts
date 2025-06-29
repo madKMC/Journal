@@ -23,6 +23,40 @@ const moodLabels: Record<string, string> = {
   general: 'General',
 }
 
+// Helper function to generate Soul State Analytics data
+const generateSoulStateData = (entries: JournalEntry[]) => {
+  const totalEntries = entries.length
+  const moodCounts: Record<string, number> = {}
+  
+  entries.forEach(entry => {
+    const mood = entry.mood || 'general'
+    moodCounts[mood] = (moodCounts[mood] || 0) + 1
+  })
+
+  const sortedMoods = Object.entries(moodCounts)
+    .sort(([, a], [, b]) => b - a)
+
+  // Calculate emotional balance
+  const positiveMoods = ['happy', 'excited', 'peaceful', 'grateful', 'energetic']
+  const challengingMoods = ['sad', 'anxious', 'overwhelmed', 'angry', 'lonely', 'burnt_out']
+  const neutralMoods = ['reflective', 'general', 'numb', 'insecure']
+
+  const positiveCount = positiveMoods.reduce((sum, mood) => sum + (moodCounts[mood] || 0), 0)
+  const challengingCount = challengingMoods.reduce((sum, mood) => sum + (moodCounts[mood] || 0), 0)
+  const neutralCount = neutralMoods.reduce((sum, mood) => sum + (moodCounts[mood] || 0), 0)
+
+  return {
+    totalEntries,
+    sortedMoods,
+    positiveCount,
+    challengingCount,
+    neutralCount,
+    positivePercentage: totalEntries > 0 ? Math.round((positiveCount / totalEntries) * 100) : 0,
+    challengingPercentage: totalEntries > 0 ? Math.round((challengingCount / totalEntries) * 100) : 0,
+    neutralPercentage: totalEntries > 0 ? Math.round((neutralCount / totalEntries) * 100) : 0
+  }
+}
+
 // Helper function to convert HTML to formatted text with proper structure
 const convertHtmlToFormattedText = (html: string): Array<{text: string, style: 'normal' | 'bold' | 'italic', type: 'text' | 'bullet' | 'number' | 'quote' | 'newline'}> => {
   const tmp = document.createElement('div')
@@ -293,7 +327,7 @@ export const generateEntryPDF = async (entry: JournalEntry): Promise<void> => {
       pdf.setFontSize(12)
       pdf.setTextColor(100, 100, 100)
       const moodText = moodLabels[entry.mood] || entry.mood
-      pdf.text(`Mood: ${moodText}`, margin, yPosition)
+      pdf.text(`Soul State: ${moodText}`, margin, yPosition)
       yPosition += 10
     }
 
@@ -434,11 +468,14 @@ export const generateMultipleEntriesPDF = async (entries: JournalEntry[], title:
     
     let yPosition = margin
 
+    // Generate Soul State Analytics data
+    const soulStateData = generateSoulStateData(entries)
+
     // Add title page
     pdf.setFont('helvetica', 'bold')
     pdf.setFontSize(28)
     pdf.setTextColor(51, 51, 51)
-    const titleY = pageHeight / 2 - 20
+    const titleY = pageHeight / 2 - 40
     pdf.text(title, margin, titleY)
     
     pdf.setFont('helvetica', 'normal')
@@ -452,9 +489,129 @@ export const generateMultipleEntriesPDF = async (entries: JournalEntry[], title:
     
     pdf.text(dateRange, margin, titleY + 25)
 
+    // Add Soul State Analytics page
+    if (soulStateData.totalEntries > 0) {
+      pdf.addPage()
+      yPosition = margin
+
+      // Soul State Analytics Header
+      pdf.setFont('helvetica', 'bold')
+      pdf.setFontSize(20)
+      pdf.setTextColor(51, 51, 51)
+      pdf.text('Soul State Analytics', margin, yPosition)
+      yPosition += 15
+
+      // Emotional Balance Section
+      pdf.setFont('helvetica', 'bold')
+      pdf.setFontSize(14)
+      pdf.text('Emotional Balance', margin, yPosition)
+      yPosition += 10
+
+      pdf.setFont('helvetica', 'normal')
+      pdf.setFontSize(11)
+      pdf.setTextColor(80, 80, 80)
+      
+      pdf.text(`Positive States: ${soulStateData.positiveCount} entries (${soulStateData.positivePercentage}%)`, margin, yPosition)
+      yPosition += 6
+      pdf.text(`Challenging States: ${soulStateData.challengingCount} entries (${soulStateData.challengingPercentage}%)`, margin, yPosition)
+      yPosition += 6
+      pdf.text(`Reflective States: ${soulStateData.neutralCount} entries (${soulStateData.neutralPercentage}%)`, margin, yPosition)
+      yPosition += 15
+
+      // Top Moods Section
+      pdf.setFont('helvetica', 'bold')
+      pdf.setFontSize(14)
+      pdf.setTextColor(51, 51, 51)
+      pdf.text('Most Frequent Soul States', margin, yPosition)
+      yPosition += 10
+
+      pdf.setFont('helvetica', 'normal')
+      pdf.setFontSize(11)
+      pdf.setTextColor(80, 80, 80)
+
+      const topMoods = soulStateData.sortedMoods.slice(0, 8)
+      for (const [mood, count] of topMoods) {
+        const percentage = Math.round((count / soulStateData.totalEntries) * 100)
+        const moodLabel = moodLabels[mood] || mood
+        pdf.text(`${moodLabel}: ${count} ${count === 1 ? 'entry' : 'entries'} (${percentage}%)`, margin, yPosition)
+        yPosition += 6
+        
+        if (yPosition > pageHeight - margin - 20) {
+          pdf.addPage()
+          yPosition = margin
+        }
+      }
+
+      yPosition += 10
+
+      // Soul Insights Section
+      pdf.setFont('helvetica', 'bold')
+      pdf.setFontSize(14)
+      pdf.setTextColor(51, 51, 51)
+      pdf.text('Soul Insights', margin, yPosition)
+      yPosition += 10
+
+      pdf.setFont('helvetica', 'normal')
+      pdf.setFontSize(11)
+      pdf.setTextColor(80, 80, 80)
+
+      const insights = [
+        `You expressed yourself through ${soulStateData.totalEntries} journal ${soulStateData.totalEntries === 1 ? 'entry' : 'entries'} this period`,
+        `Your most frequent emotional state was ${moodLabels[soulStateData.sortedMoods[0][0]] || soulStateData.sortedMoods[0][0]} (${soulStateData.sortedMoods[0][1]} ${soulStateData.sortedMoods[0][1] === 1 ? 'time' : 'times'})`,
+        soulStateData.positiveCount > soulStateData.challengingCount 
+          ? `Your soul radiated positivity with ${soulStateData.positivePercentage}% positive emotional states`
+          : soulStateData.challengingCount > soulStateData.positiveCount
+          ? `You navigated through challenges - remember that growth often comes through difficult times`
+          : `You experienced a balanced emotional journey`,
+        `You experienced ${soulStateData.sortedMoods.length} different emotional states, showing the richness of your inner journey`,
+        `Each entry is a sacred step in your path of self-discovery and growth`
+      ]
+
+      for (const insight of insights) {
+        // Split long insights into multiple lines
+        const words = insight.split(' ')
+        let currentLine = ''
+        
+        for (const word of words) {
+          const testLine = currentLine ? `${currentLine} ${word}` : word
+          const textWidth = pdf.getTextWidth(`• ${testLine}`)
+          
+          if (textWidth > contentWidth && currentLine) {
+            pdf.text(`• ${currentLine}`, margin, yPosition)
+            yPosition += 6
+            currentLine = word
+            
+            if (yPosition > pageHeight - margin - 20) {
+              pdf.addPage()
+              yPosition = margin
+            }
+          } else {
+            currentLine = testLine
+          }
+        }
+        
+        if (currentLine) {
+          pdf.text(`• ${currentLine}`, margin, yPosition)
+          yPosition += 6
+          
+          if (yPosition > pageHeight - margin - 20) {
+            pdf.addPage()
+            yPosition = margin
+          }
+        }
+      }
+    }
+
     // Add new page for entries
     pdf.addPage()
     yPosition = margin
+
+    // Add entries header
+    pdf.setFont('helvetica', 'bold')
+    pdf.setFontSize(20)
+    pdf.setTextColor(51, 51, 51)
+    pdf.text('Journal Entries', margin, yPosition)
+    yPosition += 20
 
     // Process each entry
     for (let i = 0; i < entries.length; i++) {
@@ -518,7 +675,7 @@ export const generateMultipleEntriesPDF = async (entries: JournalEntry[], title:
       
       if (entry.mood) {
         const moodText = moodLabels[entry.mood] || entry.mood
-        metadataText += ` • ${moodText}`
+        metadataText += ` • Soul State: ${moodText}`
       }
       
       pdf.text(metadataText, margin, yPosition)
