@@ -102,8 +102,11 @@ export function EntryView({ entry, open, onClose, onEdit }: EntryViewProps) {
           {entry.title}
         </DialogTitle>
         
+        {/* Add line gap above the header */}
+        <div className="h-4"></div>
+        
         {/* Custom header with proper button positioning */}
-        <div className="flex items-start justify-between p-6 pb-4 pr-16">
+        <div className="flex items-start justify-between px-6 pb-4 pr-16">
           <div className="flex-1 min-w-0 pr-4">
             <h2 className="text-2xl font-bold text-charcoal-900 mb-3">
               {entry.title}
