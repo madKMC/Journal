@@ -111,8 +111,8 @@ export function AuthForm({ mode }: AuthFormProps) {
                   {...register('fullName' as keyof (LoginFormData | SignupFormData))}
                   className="h-11 border-sage-200 focus:border-sage-400"
                 />
-                {errors.fullName && (
-                  <p className="text-sm text-red-500">{errors.fullName.message}</p>
+                {(errors as any).fullName && (
+                  <p className="text-sm text-red-500">{(errors as any).fullName.message}</p>
                 )}
               </div>
             )}
@@ -173,8 +173,8 @@ export function AuthForm({ mode }: AuthFormProps) {
                     {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-                {errors.confirmPassword && (
-                  <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>
+                {(errors as any).confirmPassword && (
+                  <p className="text-sm text-red-500">{(errors as any).confirmPassword.message}</p>
                 )}
               </div>
             )}
