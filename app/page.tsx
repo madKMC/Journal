@@ -30,21 +30,21 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-sand-100">
-      <div className="container mx-auto px-4 py-16">
-        <div className="text-center mb-16">
-          <div className="w-16 h-16 bg-sage-200 rounded-2xl mx-auto mb-8 flex items-center justify-center">
-            <PenTool className="h-8 w-8 text-charcoal-900" />
+      <div className="container mx-auto px-4 py-8 sm:py-16">
+        <div className="text-center mb-12 sm:mb-16">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-sage-200 rounded-2xl mx-auto mb-6 sm:mb-8 flex items-center justify-center">
+            <PenTool className="h-6 w-6 sm:h-8 sm:w-8 text-charcoal-900" />
           </div>
-          <h1 className="text-5xl font-bold text-charcoal-900 mb-6">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-charcoal-900 mb-4 sm:mb-6 leading-tight">
             SoulScriptJournal
           </h1>
-          <p className="text-xl text-mutedgray-500 max-w-2xl mx-auto mb-8">
+          <p className="text-lg sm:text-xl text-mutedgray-500 max-w-2xl mx-auto mb-6 sm:mb-8 px-2">
             Capture your thoughts, reflect on your journey, and create lasting memories with our beautiful, secure journaling platform designed for your soul's expression.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center px-4">
             <Button
               size="lg"
-              className="bg-mistblue-200 hover:bg-darkersage-300 transition-all duration-200 text-lg px-8 py-3 text-charcoal-900 border-0"
+              className="bg-mistblue-200 hover:bg-darkersage-300 transition-all duration-200 text-lg px-8 py-3 text-charcoal-900 border-0 w-full sm:w-auto"
               onClick={() => router.push('/auth/signup')}
             >
               Start Your Journey
@@ -52,7 +52,7 @@ export default function Home() {
             <Button
               size="lg"
               variant="outline"
-              className="text-lg px-8 py-3 hover:bg-sage-50 border-sage-200 text-charcoal-700"
+              className="text-lg px-8 py-3 hover:bg-sage-50 border-sage-200 text-charcoal-700 w-full sm:w-auto"
               onClick={() => router.push('/auth/login')}
             >
               Sign In
@@ -60,7 +60,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto">
           <Card className="border-0 bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl transition-shadow duration-200">
             <CardHeader className="text-center pb-6">
               <div className="w-12 h-12 bg-blushrose-400 rounded-xl mx-auto mb-4 flex items-center justify-center">
@@ -110,8 +110,8 @@ export default function Home() {
           </Card>
         </div>
 
-        <div className="mt-16 text-center">
-          <p className="text-mutedgray-400 text-sm">
+        <div className="mt-12 sm:mt-16 text-center">
+          <p className="text-mutedgray-400 text-sm px-4">
             Join thousands of souls who trust SoulScriptJournal with their most precious thoughts and memories.
           </p>
         </div>
