@@ -2,9 +2,10 @@
 
 import { useState } from 'react'
 import { EntryCard } from './EntryCard'
+import { SoulStateAnalytics } from './SoulStateAnalytics'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Calendar, Download } from 'lucide-react'
+import { Calendar, Download, Heart } from 'lucide-react'
 import { format } from 'date-fns'
 import { generateMultipleEntriesPDF } from '@/lib/pdfGenerator'
 import { toast } from 'sonner'
@@ -22,6 +23,7 @@ interface EntryGroupProps {
 
 export function EntryGroup({ monthYear, entries, onEdit, onDelete, onView }: EntryGroupProps) {
   const [generatingPDF, setGeneratingPDF] = useState(false)
+  const [showSoulState, setShowSoulState] = useState(false)
 
   // Parse the monthYear string (format: "2024-01")
   const [year, month] = monthYear.split('-')
@@ -31,7 +33,7 @@ export function EntryGroup({ monthYear, entries, onEdit, onDelete, onView }: Ent
   const handleGenerateMonthPDF = async () => {
     setGeneratingPDF(true)
     try {
-      await generateMultipleEntriesPDF(entries, `Journal Entries - ${formattedMonthYear}`)
+      await generateMultipleEntriesPDF(entries, `SoulScript Journal Entries - ${formattedMonthYear}`)
       toast.success('PDF generated successfully!')
     } catch (error) {
       toast.error('Failed to generate PDF')
@@ -39,6 +41,11 @@ export function EntryGroup({ monthYear, entries, onEdit, onDelete, onView }: Ent
     } finally {
       setGeneratingPDF(false)
     }
+  }
+
+  const handleShowSoulState = () => {
+    console.log('💖 [EntryGroup] Opening Soul State Analytics for:', formattedMonthYear)
+    setShowSoulState(true)
   }
 
   return (
@@ -57,18 +64,34 @@ export function EntryGroup({ monthYear, entries, onEdit, onDelete, onView }: Ent
           </Badge>
         </div>
         
-        {entries.length > 1 && (
+        <div className="flex items-center gap-2">
+          {/* Soul State Button */}
           <Button
             variant="outline"
             size="sm"
-            onClick={handleGenerateMonthPDF}
-            disabled={generatingPDF}
-            className="border-mistblue-200 text-mistblue-700 hover:bg-mistblue-50"
+            onClick={handleShowSoulState}
+            className="border-blushrose-200 text-blushrose-700 hover:bg-blushrose-50"
           >
-            <Download className="h-4 w-4 mr-1" />
-            {generatingPDF ? 'Generating...' : 'Month PDF'}
+            <Heart className="h-4 w-4 mr-1" />
+            <span className="hidden sm:inline">Soul State</span>
+            <span className="sm:hidden">Soul</span>
           </Button>
-        )}
+          
+          {/* Month PDF Button */}
+          {entries.length > 1 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleGenerateMonthPDF}
+              disabled={generatingPDF}
+              className="border-mistblue-200 text-mistblue-700 hover:bg-mistblue-50"
+            >
+              <Download className="h-4 w-4 mr-1" />
+              <span className="hidden sm:inline">{generatingPDF ? 'Generating...' : 'Month PDF'}</span>
+              <span className="sm:hidden">{generatingPDF ? '...' : 'PDF'}</span>
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Entries Grid */}
@@ -83,6 +106,14 @@ export function EntryGroup({ monthYear, entries, onEdit, onDelete, onView }: Ent
           />
         ))}
       </div>
+
+      {/* Soul State Analytics Modal */}
+      <SoulStateAnalytics
+        entries={entries}
+        monthYear={monthYear}
+        open={showSoulState}
+        onClose={() => setShowSoulState(false)}
+      />
     </div>
   )
 }

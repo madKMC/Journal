@@ -22,7 +22,7 @@ import { processMonitor } from '@/lib/processMonitor'
 const entrySchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title must be less than 200 characters'),
   content: z.string().min(1, 'Content is required'),
-  mood: z.string().optional(),
+  mood: z.string().default('general'), // Default to 'general'
   is_private: z.boolean().default(true),
 })
 
@@ -85,7 +85,7 @@ export function EntryForm({ entry, onSuccess, onCancel, initialPrompt }: EntryFo
     defaultValues: {
       title: entry?.title || '',
       content: entry?.content || (initialPrompt ? `Prompt: ${initialPrompt}\n\n` : ''),
-      mood: entry?.mood || '',
+      mood: entry?.mood || 'general', // Default to 'general' if no mood
       is_private: true, // Always set to private for now
     },
   })
@@ -142,6 +142,8 @@ export function EntryForm({ entry, onSuccess, onCancel, initialPrompt }: EntryFo
         is_private: true, // Force all entries to be private for now
         image_url: entry?.image_url || null,
         updated_at: new Date().toISOString(),
+        // Ensure mood defaults to 'general' if not set
+        mood: data.mood || 'general',
       }
 
       let error
@@ -191,7 +193,7 @@ export function EntryForm({ entry, onSuccess, onCancel, initialPrompt }: EntryFo
       <Card className="w-full max-w-4xl mx-auto shadow-lg border-0 bg-white/90 backdrop-blur-sm">
         <CardHeader className="pb-6">
           <CardTitle className="text-2xl font-bold text-charcoal-900">
-            {entry ? 'Edit Entry' : 'New Journal Entry'}
+            {entry ? 'Edit Entry' : 'New Soul Expression'}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -202,7 +204,7 @@ export function EntryForm({ entry, onSuccess, onCancel, initialPrompt }: EntryFo
               </Label>
               <Input
                 id="title"
-                placeholder="What's on your mind today?"
+                placeholder="What's stirring in your soul today?"
                 {...register('title')}
                 className="h-12 text-lg border-sage-200 focus:border-sage-400"
               />
@@ -212,13 +214,13 @@ export function EntryForm({ entry, onSuccess, onCancel, initialPrompt }: EntryFo
             </div>
 
             <div className="space-y-2">
-              <Label className="text-base font-medium text-charcoal-700">Mood</Label>
+              <Label className="text-base font-medium text-charcoal-700">Soul State</Label>
               <Select value={watchedMood} onValueChange={(value) => {
                 console.log('🎭 [EntryForm] Mood changed to:', value)
-                setValue('mood', value)
+                setValue('mood', value || 'general') // Ensure default to 'general'
               }}>
                 <SelectTrigger className="h-12 border-sage-200 focus:border-sage-400">
-                  <SelectValue placeholder="How are you feeling?" />
+                  <SelectValue placeholder="How is your soul feeling?" />
                 </SelectTrigger>
                 <SelectContent>
                   {Object.entries(moodCategories).map(([category, moods]) => (
@@ -253,12 +255,12 @@ export function EntryForm({ entry, onSuccess, onCancel, initialPrompt }: EntryFo
 
             <div className="space-y-2">
               <Label htmlFor="content" className="text-base font-medium text-charcoal-700">
-                Content
+                Soul Expression
               </Label>
               <RichTextEditor
                 value={content}
                 onChange={handleContentChange}
-                placeholder="Write your thoughts here... Use the toolbar above for formatting."
+                placeholder="Let your soul speak through your words... Use the toolbar above for formatting."
                 className="border-sage-200 focus:border-sage-400"
               />
               {errors.content && (
@@ -274,7 +276,7 @@ export function EntryForm({ entry, onSuccess, onCancel, initialPrompt }: EntryFo
               >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 <Save className="mr-2 h-4 w-4" />
-                {entry ? 'Update Entry' : 'Save Entry'}
+                {entry ? 'Update Expression' : 'Save Expression'}
               </Button>
               {onCancel && (
                 <Button
