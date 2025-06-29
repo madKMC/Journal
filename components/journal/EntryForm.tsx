@@ -252,7 +252,6 @@ export function EntryForm({ entry, onSuccess, onCancel, initialPrompt }: EntryFo
                 >
                   Cancel
                 </Button>
-              </Button>
               )}
             </div>
           </form>
