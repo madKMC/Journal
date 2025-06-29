@@ -28,7 +28,7 @@ type EntryFormData = z.infer<typeof entrySchema>
 type JournalEntry = Database['public']['Tables']['journal_entries']['Row']
 
 interface EntryFormProps {
-  entry?: JournalEntry
+  entry?: JournalEntry | null
   onSuccess?: () => void
   onCancel?: () => void
 }
