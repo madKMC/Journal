@@ -7,8 +7,8 @@ import { Toaster } from '@/components/ui/sonner'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'My Journal - Capture Your Thoughts',
-  description: 'A beautiful journal app to capture and organize your daily thoughts and memories.',
+  title: 'SoulScriptJournal - Capture Your Thoughts',
+  description: 'A beautiful journal app to capture and organize your daily thoughts and memories with SoulScriptJournal.',
 }
 
 export default function RootLayout({

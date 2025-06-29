@@ -36,10 +36,10 @@ export default function Home() {
             <PenTool className="h-8 w-8 text-charcoal-900" />
           </div>
           <h1 className="text-5xl font-bold text-charcoal-900 mb-6">
-            My Journal
+            SoulScriptJournal
           </h1>
           <p className="text-xl text-mutedgray-500 max-w-2xl mx-auto mb-8">
-            Capture your thoughts, reflect on your journey, and create lasting memories with our beautiful, secure journaling platform.
+            Capture your thoughts, reflect on your journey, and create lasting memories with our beautiful, secure journaling platform designed for your soul's expression.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
@@ -47,7 +47,7 @@ export default function Home() {
               className="bg-mistblue-200 hover:bg-darkersage-300 transition-all duration-200 text-lg px-8 py-3 text-charcoal-900 border-0"
               onClick={() => router.push('/auth/signup')}
             >
-              Start Journaling
+              Start Your Journey
             </Button>
             <Button
               size="lg"
@@ -67,12 +67,12 @@ export default function Home() {
                 <Heart className="h-6 w-6 text-white" />
               </div>
               <CardTitle className="text-xl font-semibold text-charcoal-900">
-                Express Yourself
+                Express Your Soul
               </CardTitle>
             </CardHeader>
             <CardContent>
               <CardDescription className="text-mutedgray-500 text-center">
-                Write freely with our intuitive editor. Add images, track your moods, and let your creativity flow without limits.
+                Write freely with our intuitive editor. Add images, track your moods, and let your soul's voice flow without limits through SoulScriptJournal.
               </CardDescription>
             </CardContent>
           </Card>
@@ -83,12 +83,12 @@ export default function Home() {
                 <Shield className="h-6 w-6 text-charcoal-900" />
               </div>
               <CardTitle className="text-xl font-semibold text-charcoal-900">
-                Private & Secure
+                Sacred & Secure
               </CardTitle>
             </CardHeader>
             <CardContent>
               <CardDescription className="text-mutedgray-500 text-center">
-                Your thoughts are safe with us. All entries are private by default with enterprise-grade security protecting your data.
+                Your innermost thoughts are sacred to us. All entries are private by default with enterprise-grade security protecting your personal journey.
               </CardDescription>
             </CardContent>
           </Card>
@@ -99,12 +99,12 @@ export default function Home() {
                 <Sparkles className="h-6 w-6 text-charcoal-900" />
               </div>
               <CardTitle className="text-xl font-semibold text-charcoal-900">
-                Daily Inspiration
+                Soul Inspiration
               </CardTitle>
             </CardHeader>
             <CardContent>
               <CardDescription className="text-mutedgray-500 text-center">
-                Never run out of ideas with our curated writing prompts designed to spark reflection and creativity every day.
+                Never run out of inspiration with our curated writing prompts designed to spark deep reflection and connect you with your inner wisdom.
               </CardDescription>
             </CardContent>
           </Card>
@@ -112,7 +112,7 @@ export default function Home() {
 
         <div className="mt-16 text-center">
           <p className="text-mutedgray-400 text-sm">
-            Join thousands of people who trust My Journal with their most precious thoughts.
+            Join thousands of souls who trust SoulScriptJournal with their most precious thoughts and memories.
           </p>
         </div>
       </div>
