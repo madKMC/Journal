@@ -28,48 +28,7 @@ export class ProcessMonitor {
   private setupProcessHandlers(): void {
     if (!isNodeEnvironment) return
 
-    // Handle graceful shutdown
-    process.on('SIGTERM', () => {
-      console.log('📋 [ProcessMonitor] Received SIGTERM, shutting down gracefully...')
-      this.logShutdown('SIGTERM')
-      this.cleanup()
-      process.exit(0)
-    })
-
-    process.on('SIGINT', () => {
-      console.log('📋 [ProcessMonitor] Received SIGINT, shutting down gracefully...')
-      this.logShutdown('SIGINT')
-      this.cleanup()
-      process.exit(0)
-    })
-
-    // Handle uncaught exceptions
-    process.on('uncaughtException', (error) => {
-      console.error('🚨 [ProcessMonitor] Uncaught Exception:', {
-        error: error.message,
-        stack: error.stack,
-        timestamp: new Date().toISOString(),
-        uptime: this.getUptime(),
-        memory: process.memoryUsage()
-      })
-      this.cleanup()
-      process.exit(1)
-    })
-
-    // Handle unhandled promise rejections
-    process.on('unhandledRejection', (reason, promise) => {
-      console.error('🚨 [ProcessMonitor] Unhandled Rejection:', {
-        reason,
-        promise,
-        timestamp: new Date().toISOString(),
-        uptime: this.getUptime(),
-        memory: process.memoryUsage()
-      })
-      this.cleanup()
-      process.exit(1)
-    })
-
-    // Handle warnings
+    // Handle warnings only - let Next.js handle process lifecycle
     process.on('warning', (warning) => {
       console.warn('⚠️ [ProcessMonitor] Process Warning:', {
         name: warning.name,
