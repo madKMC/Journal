@@ -96,7 +96,7 @@ export function EntryView({ entry, open, onClose, onEdit }: EntryViewProps) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0" hideCloseButton>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
         {/* Custom header with proper button positioning */}
         <div className="flex items-start justify-between p-6 pb-4">
           <div className="flex-1 min-w-0 pr-4">
@@ -149,14 +149,6 @@ export function EntryView({ entry, open, onClose, onEdit }: EntryViewProps) {
             >
               <Edit className="h-4 w-4 mr-1" />
               Edit
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="text-mutedgray-500 hover:text-charcoal-700 hover:bg-sage-50"
-            >
-              <X className="h-4 w-4" />
             </Button>
           </div>
         </div>
