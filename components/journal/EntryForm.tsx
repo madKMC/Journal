@@ -15,7 +15,7 @@ import { MoodPrompts } from './MoodPrompts'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
-import { Loader2, Save, Upload } from 'lucide-react'
+import { Loader2, Save } from 'lucide-react'
 import { Database } from '@/types/database'
 
 const entrySchema = z.object({
@@ -63,8 +63,6 @@ const moodCategories = {
 
 export function EntryForm({ entry, onSuccess, onCancel, initialPrompt }: EntryFormProps) {
   const [loading, setLoading] = useState(false)
-  const [uploading, setUploading] = useState(false)
-  const [imageUrl, setImageUrl] = useState(entry?.image_url || '')
   const { user } = useAuth()
 
   const {
@@ -87,38 +85,6 @@ export function EntryForm({ entry, onSuccess, onCancel, initialPrompt }: EntryFo
   const watchedIsPrivate = watch('is_private')
   const watchedContent = watch('content')
 
-  const uploadImage = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file || !user) return
-
-    setUploading(true)
-    try {
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${Math.random()}.${fileExt}`
-      const filePath = `${user.id}/${fileName}`
-
-      const { error: uploadError } = await supabase.storage
-        .from('journal-images')
-        .upload(filePath, file)
-
-      if (uploadError) {
-        throw uploadError
-      }
-
-      const { data } = supabase.storage
-        .from('journal-images')
-        .getPublicUrl(filePath)
-
-      setImageUrl(data.publicUrl)
-      toast.success('Image uploaded successfully!')
-    } catch (error) {
-      toast.error('Error uploading image')
-      console.error('Error uploading image:', error)
-    } finally {
-      setUploading(false)
-    }
-  }
-
   const handleUsePrompt = (prompt: string) => {
     const currentContent = watchedContent || ''
     const newContent = currentContent 
@@ -135,7 +101,7 @@ export function EntryForm({ entry, onSuccess, onCancel, initialPrompt }: EntryFo
       const entryData = {
         ...data,
         user_id: user.id,
-        image_url: imageUrl || null,
+        image_url: entry?.image_url || null,
         updated_at: new Date().toISOString(),
       }
 
@@ -233,50 +199,6 @@ export function EntryForm({ entry, onSuccess, onCancel, initialPrompt }: EntryFo
                     {watchedIsPrivate ? 'Private entry' : 'Public entry'}
                   </span>
                 </div>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-base font-medium text-charcoal-700">Image</Label>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-4">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={uploadImage}
-                    className="hidden"
-                    id="image-upload"
-                  />
-                  <Label
-                    htmlFor="image-upload"
-                    className="cursor-pointer inline-flex items-center px-4 py-2 bg-sage-100 hover:bg-sage-200 rounded-lg transition-colors text-charcoal-700"
-                  >
-                    {uploading ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    ) : (
-                      <Upload className="h-4 w-4 mr-2" />
-                    )}
-                    {uploading ? 'Uploading...' : 'Upload Image'}
-                  </Label>
-                </div>
-                {imageUrl && (
-                  <div className="relative">
-                    <img
-                      src={imageUrl}
-                      alt="Entry image"
-                      className="w-full max-w-sm h-48 object-cover rounded-lg shadow-md"
-                    />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="sm"
-                      className="absolute top-2 right-2"
-                      onClick={() => setImageUrl('')}
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                )}
               </div>
             </div>
 
