@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Edit, Lock, Globe, Calendar, Download, X } from 'lucide-react'
@@ -96,7 +96,7 @@ export function EntryView({ entry, open, onClose, onEdit }: EntryViewProps) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0" hideCloseButton>
         {/* Custom header with proper button positioning */}
         <div className="flex items-start justify-between p-6 pb-4">
           <div className="flex-1 min-w-0 pr-4">
