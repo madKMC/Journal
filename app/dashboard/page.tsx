@@ -17,6 +17,7 @@ import { toast } from 'sonner'
 import { Search, Filter, Plus } from 'lucide-react'
 import { format } from 'date-fns'
 import { Database } from '@/types/database'
+import { processMonitor } from '@/lib/processMonitor'
 
 type JournalEntry = Database['public']['Tables']['journal_entries']['Row']
 
@@ -38,6 +39,10 @@ export default function DashboardPage() {
   const { user } = useAuth()
 
   useEffect(() => {
+    // Initialize process monitoring when dashboard loads
+    processMonitor.startMemoryMonitoring(30000) // Monitor every 30 seconds
+    processMonitor.setMemoryThreshold(400) // 400MB threshold
+    
     if (user) {
       fetchEntries()
     }
@@ -47,6 +52,9 @@ export default function DashboardPage() {
     if (!user) return
 
     try {
+      console.log('📊 [Dashboard] Fetching entries for user:', user.id)
+      processMonitor.logMemoryUsage('Before Fetch Entries')
+
       const { data, error } = await supabase
         .from('journal_entries')
         .select('*')
@@ -54,10 +62,13 @@ export default function DashboardPage() {
         .order('created_at', { ascending: false })
 
       if (error) throw error
+      
       setEntries(data || [])
+      console.log('✅ [Dashboard] Fetched', data?.length || 0, 'entries')
+      processMonitor.logMemoryUsage('After Fetch Entries')
     } catch (error) {
+      console.error('🚨 [Dashboard] Error fetching entries:', error)
       toast.error('Error loading entries')
-      console.error('Error fetching entries:', error)
     } finally {
       setLoading(false)
     }
@@ -136,11 +147,15 @@ export default function DashboardPage() {
   }, [entries, searchTerm, moodFilter, selectedMonth, selectedYear])
 
   const handleCreateEntry = () => {
+    console.log('📝 [Dashboard] Creating new entry')
+    processMonitor.logMemoryUsage('Create Entry')
     setEditingEntry(null)
     setShowForm(true)
   }
 
   const handleEditEntry = (entry: JournalEntry) => {
+    console.log('✏️ [Dashboard] Editing entry:', entry.id)
+    processMonitor.logMemoryUsage('Edit Entry')
     setEditingEntry(entry)
     setShowForm(true)
     setViewingEntry(null)
@@ -148,6 +163,9 @@ export default function DashboardPage() {
 
   const handleDeleteEntry = async (id: string) => {
     try {
+      console.log('🗑️ [Dashboard] Deleting entry:', id)
+      processMonitor.logMemoryUsage('Before Delete Entry')
+
       const { error } = await supabase
         .from('journal_entries')
         .delete()
@@ -157,13 +175,18 @@ export default function DashboardPage() {
 
       setEntries(entries.filter(entry => entry.id !== id))
       toast.success('Entry deleted successfully')
+      
+      console.log('✅ [Dashboard] Entry deleted successfully')
+      processMonitor.logMemoryUsage('After Delete Entry')
     } catch (error) {
+      console.error('🚨 [Dashboard] Error deleting entry:', error)
       toast.error('Error deleting entry')
-      console.error('Error deleting entry:', error)
     }
   }
 
   const handleFormSuccess = () => {
+    console.log('✅ [Dashboard] Form submitted successfully')
+    processMonitor.logMemoryUsage('Form Success')
     setShowForm(false)
     setEditingEntry(null)
     setPromptText('')
@@ -171,6 +194,8 @@ export default function DashboardPage() {
   }
 
   const handleUsePrompt = (prompt: string) => {
+    console.log('💡 [Dashboard] Using writing prompt')
+    processMonitor.logMemoryUsage('Use Prompt')
     setPromptText(prompt)
     setShowForm(true)
     setEditingEntry(null)

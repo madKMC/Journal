@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf'
 import { format } from 'date-fns'
 import { Database } from '@/types/database'
+import { processMonitor } from './processMonitor'
 
 type JournalEntry = Database['public']['Tables']['journal_entries']['Row']
 
@@ -215,9 +216,14 @@ const renderFormattedLine = (pdf: jsPDF, line: Array<{text: string, style: 'norm
 }
 
 export const generateEntryPDF = async (entry: JournalEntry): Promise<void> => {
+  let pdf: jsPDF | null = null
+  
   try {
+    console.log('📄 [PDFGenerator] Starting PDF generation for entry:', entry.id)
+    processMonitor.logMemoryUsage('PDF Generation Start')
+
     // Create new PDF document
-    const pdf = new jsPDF({
+    pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
       format: 'a4'
@@ -383,15 +389,39 @@ export const generateEntryPDF = async (entry: JournalEntry): Promise<void> => {
     // Save the PDF
     pdf.save(filename)
 
+    console.log('✅ [PDFGenerator] PDF generated successfully:', filename)
+    processMonitor.logMemoryUsage('PDF Generation Complete')
+
   } catch (error) {
-    console.error('Error generating PDF:', error)
+    console.error('🚨 [PDFGenerator] Error generating PDF:', error)
+    processMonitor.logMemoryUsage('PDF Generation Error')
+    
+    // Force garbage collection if available
+    if (global.gc) {
+      console.log('🧹 [PDFGenerator] Running garbage collection after error...')
+      global.gc()
+    }
+    
     throw new Error('Failed to generate PDF')
+  } finally {
+    // Clean up PDF instance
+    pdf = null
+    
+    // Force garbage collection if available
+    if (global.gc) {
+      global.gc()
+    }
   }
 }
 
 export const generateMultipleEntriesPDF = async (entries: JournalEntry[], title: string = 'Journal Entries'): Promise<void> => {
+  let pdf: jsPDF | null = null
+  
   try {
-    const pdf = new jsPDF({
+    console.log('📄 [PDFGenerator] Starting multi-entry PDF generation for', entries.length, 'entries')
+    processMonitor.logMemoryUsage('Multi-PDF Generation Start')
+
+    pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
       format: 'a4'
@@ -429,6 +459,12 @@ export const generateMultipleEntriesPDF = async (entries: JournalEntry[], title:
     // Process each entry
     for (let i = 0; i < entries.length; i++) {
       const entry = entries[i]
+      
+      // Log progress for large batches
+      if (i > 0 && i % 10 === 0) {
+        console.log(`📄 [PDFGenerator] Processing entry ${i + 1}/${entries.length}`)
+        processMonitor.logMemoryUsage(`Multi-PDF Progress ${i + 1}/${entries.length}`)
+      }
       
       // Check if we need a new page
       if (yPosition > pageHeight - margin - 50) {
@@ -564,8 +600,27 @@ export const generateMultipleEntriesPDF = async (entries: JournalEntry[], title:
     // Save the PDF
     pdf.save(filename)
 
+    console.log('✅ [PDFGenerator] Multi-entry PDF generated successfully:', filename)
+    processMonitor.logMemoryUsage('Multi-PDF Generation Complete')
+
   } catch (error) {
-    console.error('Error generating PDF:', error)
+    console.error('🚨 [PDFGenerator] Error generating multi-entry PDF:', error)
+    processMonitor.logMemoryUsage('Multi-PDF Generation Error')
+    
+    // Force garbage collection if available
+    if (global.gc) {
+      console.log('🧹 [PDFGenerator] Running garbage collection after error...')
+      global.gc()
+    }
+    
     throw new Error('Failed to generate PDF')
+  } finally {
+    // Clean up PDF instance
+    pdf = null
+    
+    // Force garbage collection if available
+    if (global.gc) {
+      global.gc()
+    }
   }
 }
