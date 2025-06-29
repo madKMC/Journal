@@ -52,7 +52,7 @@ supabase.auth.onAuthStateChange((event, session) => {
 })
 
 // Test connection on initialization
-supabase.from('journal_entries').select('count', { count: 'exact', head: true })
+void supabase.from('journal_entries').select('count', { count: 'exact', head: true })
   .then(({ error }) => {
     if (error) {
       console.error('❌ [Supabase] Connection test failed:', error)
