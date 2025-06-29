@@ -1,10 +1,13 @@
 'use client'
 
+import { useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Edit, Lock, Globe, Calendar } from 'lucide-react'
+import { Edit, Lock, Globe, Calendar, Download } from 'lucide-react'
 import { format } from 'date-fns'
+import { generateEntryPDF } from '@/lib/pdfGenerator'
+import { toast } from 'sonner'
 import { Database } from '@/types/database'
 
 type JournalEntry = Database['public']['Tables']['journal_entries']['Row']
@@ -71,7 +74,22 @@ const moodLabels: Record<string, string> = {
 }
 
 export function EntryView({ entry, open, onClose, onEdit }: EntryViewProps) {
+  const [generatingPDF, setGeneratingPDF] = useState(false)
+
   if (!entry) return null
+
+  const handleGeneratePDF = async () => {
+    setGeneratingPDF(true)
+    try {
+      await generateEntryPDF(entry)
+      toast.success('PDF generated successfully!')
+    } catch (error) {
+      toast.error('Failed to generate PDF')
+      console.error('PDF generation error:', error)
+    } finally {
+      setGeneratingPDF(false)
+    }
+  }
 
   // Check if content contains HTML tags (rich text)
   const isRichText = /<[^>]*>/.test(entry.content)
@@ -110,15 +128,27 @@ export function EntryView({ entry, open, onClose, onEdit }: EntryViewProps) {
                 </div>
               </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onEdit(entry)}
-              className="ml-4 border-sage-200 text-sage-700 hover:bg-sage-50"
-            >
-              <Edit className="h-4 w-4 mr-1" />
-              Edit
-            </Button>
+            <div className="flex items-center gap-2 ml-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleGeneratePDF}
+                disabled={generatingPDF}
+                className="border-mistblue-200 text-mistblue-700 hover:bg-mistblue-50"
+              >
+                <Download className="h-4 w-4 mr-1" />
+                {generatingPDF ? 'Generating...' : 'PDF'}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onEdit(entry)}
+                className="border-sage-200 text-sage-700 hover:bg-sage-50"
+              >
+                <Edit className="h-4 w-4 mr-1" />
+                Edit
+              </Button>
+            </div>
           </div>
         </DialogHeader>
 

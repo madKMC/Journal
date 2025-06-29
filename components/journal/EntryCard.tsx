@@ -5,8 +5,10 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-import { Edit, Trash2, Eye, Lock, Globe } from 'lucide-react'
+import { Edit, Trash2, Eye, Lock, Globe, Download } from 'lucide-react'
 import { format } from 'date-fns'
+import { generateEntryPDF } from '@/lib/pdfGenerator'
+import { toast } from 'sonner'
 import { Database } from '@/types/database'
 
 type JournalEntry = Database['public']['Tables']['journal_entries']['Row']
@@ -74,11 +76,25 @@ const moodLabels: Record<string, string> = {
 
 export function EntryCard({ entry, onEdit, onDelete, onView }: EntryCardProps) {
   const [deleting, setDeleting] = useState(false)
+  const [generatingPDF, setGeneratingPDF] = useState(false)
 
   const handleDelete = async () => {
     setDeleting(true)
     await onDelete(entry.id)
     setDeleting(false)
+  }
+
+  const handleGeneratePDF = async () => {
+    setGeneratingPDF(true)
+    try {
+      await generateEntryPDF(entry)
+      toast.success('PDF generated successfully!')
+    } catch (error) {
+      toast.error('Failed to generate PDF')
+      console.error('PDF generation error:', error)
+    } finally {
+      setGeneratingPDF(false)
+    }
   }
 
   const truncateText = (text: string, maxLength: number) => {
@@ -151,6 +167,17 @@ export function EntryCard({ entry, onEdit, onDelete, onView }: EntryCardProps) {
             </Button>
             
             <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleGeneratePDF}
+                disabled={generatingPDF}
+                className="text-mutedgray-600 hover:text-mistblue-600 hover:bg-mistblue-50"
+                title="Download as PDF"
+              >
+                <Download className="h-4 w-4" />
+              </Button>
+              
               <Button
                 variant="ghost"
                 size="sm"
