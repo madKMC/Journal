@@ -129,6 +129,7 @@ export default function DashboardPage() {
             <div className="max-w-4xl mx-auto">
               <EntryForm
                 entry={editingEntry}
+                initialPrompt={promptText}
                 onSuccess={handleFormSuccess}
                 onCancel={() => {
                   setShowForm(false)
