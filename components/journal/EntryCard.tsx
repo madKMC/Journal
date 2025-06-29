@@ -10,6 +10,7 @@ import { format } from 'date-fns'
 import { generateEntryPDF } from '@/lib/pdfGenerator'
 import { toast } from 'sonner'
 import { Database } from '@/types/database'
+import { processMonitor } from '@/lib/processMonitor'
 
 type JournalEntry = Database['public']['Tables']['journal_entries']['Row']
 
@@ -79,22 +80,49 @@ export function EntryCard({ entry, onEdit, onDelete, onView }: EntryCardProps) {
   const [generatingPDF, setGeneratingPDF] = useState(false)
 
   const handleDelete = async () => {
+    console.log('🗑️ [EntryCard] Deleting entry:', entry.id)
     setDeleting(true)
-    await onDelete(entry.id)
-    setDeleting(false)
+    processMonitor.logMemoryUsage('Before Delete Entry Card')
+    
+    try {
+      await onDelete(entry.id)
+      console.log('✅ [EntryCard] Entry deleted successfully')
+    } catch (error) {
+      console.error('🚨 [EntryCard] Error deleting entry:', error)
+    } finally {
+      setDeleting(false)
+      processMonitor.logMemoryUsage('After Delete Entry Card')
+    }
   }
 
   const handleGeneratePDF = async () => {
+    console.log('📄 [EntryCard] Generating PDF for entry:', entry.id)
     setGeneratingPDF(true)
+    processMonitor.logMemoryUsage('Before PDF Generation Card')
+    
     try {
       await generateEntryPDF(entry)
       toast.success('PDF generated successfully!')
+      console.log('✅ [EntryCard] PDF generated successfully')
     } catch (error) {
       toast.error('Failed to generate PDF')
-      console.error('PDF generation error:', error)
+      console.error('🚨 [EntryCard] PDF generation error:', error)
     } finally {
       setGeneratingPDF(false)
+      processMonitor.logMemoryUsage('After PDF Generation Card')
     }
+  }
+
+  const handleEdit = () => {
+    console.log('✏️ [EntryCard] Editing entry:', entry.id)
+    processMonitor.logMemoryUsage('Edit Entry Card')
+    onEdit(entry)
+  }
+
+  const handleView = () => {
+    console.log('👁️ [EntryCard] Viewing entry:', entry.id)
+    processMonitor.logMemoryUsage('View Entry Card')
+    onView(entry)
   }
 
   const truncateContent = (content: string, maxLength: number) => {
@@ -177,7 +205,7 @@ export function EntryCard({ entry, onEdit, onDelete, onView }: EntryCardProps) {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onView(entry)}
+              onClick={handleView}
               className="text-sage-600 hover:text-sage-700 hover:bg-sage-50"
             >
               <Eye className="h-4 w-4 mr-1" />
@@ -199,7 +227,7 @@ export function EntryCard({ entry, onEdit, onDelete, onView }: EntryCardProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onEdit(entry)}
+                onClick={handleEdit}
                 className="text-mutedgray-600 hover:text-sage-600 hover:bg-sage-50"
               >
                 <Edit className="h-4 w-4" />

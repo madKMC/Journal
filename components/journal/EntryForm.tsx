@@ -17,6 +17,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
 import { Loader2, Save } from 'lucide-react'
 import { Database } from '@/types/database'
+import { processMonitor } from '@/lib/processMonitor'
 
 const entrySchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title must be less than 200 characters'),
@@ -66,6 +67,13 @@ export function EntryForm({ entry, onSuccess, onCancel, initialPrompt }: EntryFo
   const [content, setContent] = useState(entry?.content || (initialPrompt ? `<p><strong>Prompt:</strong> ${initialPrompt}</p><p><br></p>` : ''))
   const { user } = useAuth()
 
+  console.log('📝 [EntryForm] Component initialized:', {
+    isEditing: !!entry,
+    entryId: entry?.id,
+    hasInitialPrompt: !!initialPrompt,
+    userId: user?.id
+  })
+
   const {
     register,
     handleSubmit,
@@ -86,6 +94,9 @@ export function EntryForm({ entry, onSuccess, onCancel, initialPrompt }: EntryFo
   // const watchedIsPrivate = watch('is_private')
 
   const handleUsePrompt = (prompt: string) => {
+    console.log('💡 [EntryForm] Using prompt:', prompt.substring(0, 50) + '...')
+    processMonitor.logMemoryUsage('Use Prompt in Form')
+    
     const newContent = content 
       ? `${content}<p><br></p><p><strong>Prompt:</strong> ${prompt}</p><p><br></p>`
       : `<p><strong>Prompt:</strong> ${prompt}</p><p><br></p>`
@@ -106,9 +117,23 @@ export function EntryForm({ entry, onSuccess, onCancel, initialPrompt }: EntryFo
   }
 
   const onSubmit = async (data: EntryFormData) => {
-    if (!user) return
+    if (!user) {
+      console.error('🚨 [EntryForm] No user found for entry submission')
+      return
+    }
+
+    console.log('💾 [EntryForm] Submitting entry:', {
+      isEditing: !!entry,
+      entryId: entry?.id,
+      title: data.title,
+      mood: data.mood,
+      contentLength: content.length,
+      userId: user.id
+    })
 
     setLoading(true)
+    processMonitor.logMemoryUsage('Before Entry Submit')
+
     try {
       const entryData = {
         ...data,
@@ -122,6 +147,7 @@ export function EntryForm({ entry, onSuccess, onCancel, initialPrompt }: EntryFo
       let error
       if (entry) {
         // Update existing entry
+        console.log('✏️ [EntryForm] Updating existing entry:', entry.id)
         const { error: updateError } = await supabase
           .from('journal_entries')
           .update(entryData)
@@ -129,6 +155,7 @@ export function EntryForm({ entry, onSuccess, onCancel, initialPrompt }: EntryFo
         error = updateError
       } else {
         // Create new entry
+        console.log('📝 [EntryForm] Creating new entry')
         const { error: insertError } = await supabase
           .from('journal_entries')
           .insert([entryData])
@@ -136,14 +163,18 @@ export function EntryForm({ entry, onSuccess, onCancel, initialPrompt }: EntryFo
       }
 
       if (error) {
+        console.error('🚨 [EntryForm] Database error:', error)
         throw error
       }
 
+      console.log('✅ [EntryForm] Entry saved successfully')
+      processMonitor.logMemoryUsage('After Entry Submit')
+      
       toast.success(entry ? 'Entry updated successfully!' : 'Entry created successfully!')
       onSuccess?.()
     } catch (error) {
+      console.error('🚨 [EntryForm] Error saving entry:', error)
       toast.error('Error saving entry')
-      console.error('Error saving entry:', error)
     } finally {
       setLoading(false)
     }
@@ -182,7 +213,10 @@ export function EntryForm({ entry, onSuccess, onCancel, initialPrompt }: EntryFo
 
             <div className="space-y-2">
               <Label className="text-base font-medium text-charcoal-700">Mood</Label>
-              <Select value={watchedMood} onValueChange={(value) => setValue('mood', value)}>
+              <Select value={watchedMood} onValueChange={(value) => {
+                console.log('🎭 [EntryForm] Mood changed to:', value)
+                setValue('mood', value)
+              }}>
                 <SelectTrigger className="h-12 border-sage-200 focus:border-sage-400">
                   <SelectValue placeholder="How are you feeling?" />
                 </SelectTrigger>
@@ -247,7 +281,10 @@ export function EntryForm({ entry, onSuccess, onCancel, initialPrompt }: EntryFo
                   type="button"
                   variant="outline"
                   className="flex-1 h-12 border-sage-200 text-charcoal-700 hover:bg-sage-50"
-                  onClick={onCancel}
+                  onClick={() => {
+                    console.log('❌ [EntryForm] Form cancelled')
+                    onCancel()
+                  }}
                   disabled={loading}
                 >
                   Cancel

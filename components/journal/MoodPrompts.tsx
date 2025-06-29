@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { RefreshCw, Lightbulb, Sparkles } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { Database } from '@/types/database'
+import { processMonitor } from '@/lib/processMonitor'
 
 type WritingPrompt = Database['public']['Tables']['writing_prompts']['Row']
 
@@ -58,30 +59,52 @@ export function MoodPrompts({ selectedMood, onUsePrompt, className }: MoodPrompt
   const [loading, setLoading] = useState(false)
 
   const fetchPrompts = async (mood?: string) => {
+    console.log('🎭 [MoodPrompts] Fetching prompts for mood:', mood || 'general')
     setLoading(true)
+    processMonitor.logMemoryUsage('Before Fetch Mood Prompts')
+
     try {
       let query = supabase.from('writing_prompts').select('*')
       
       if (mood) {
         // Get prompts for the specific mood + general prompts
         query = query.in('category', [mood, 'general'])
+        console.log('🎭 [MoodPrompts] Fetching prompts for categories:', [mood, 'general'])
       } else {
         // Get only general prompts if no mood selected
         query = query.eq('category', 'general')
+        console.log('🎭 [MoodPrompts] Fetching general prompts only')
       }
 
       const { data, error } = await query.order('created_at', { ascending: false })
 
-      if (error) throw error
+      if (error) {
+        console.error('🚨 [MoodPrompts] Error fetching mood prompts:', error)
+        throw error
+      }
 
       if (data && data.length > 0) {
         setPrompts(data)
         // Select a random prompt
         const randomIndex = Math.floor(Math.random() * data.length)
-        setCurrentPrompt(data[randomIndex])
+        const selectedPrompt = data[randomIndex]
+        setCurrentPrompt(selectedPrompt)
+        
+        console.log('✅ [MoodPrompts] Prompts fetched and random prompt selected:', {
+          totalPrompts: data.length,
+          selectedPromptId: selectedPrompt.id,
+          selectedCategory: selectedPrompt.category,
+          promptPreview: selectedPrompt.prompt.substring(0, 50) + '...'
+        })
+      } else {
+        console.warn('⚠️ [MoodPrompts] No prompts found for mood:', mood)
+        setPrompts([])
+        setCurrentPrompt(null)
       }
+
+      processMonitor.logMemoryUsage('After Fetch Mood Prompts')
     } catch (error) {
-      console.error('Error fetching mood prompts:', error)
+      console.error('🚨 [MoodPrompts] Error fetching mood prompts:', error)
     } finally {
       setLoading(false)
     }
@@ -90,11 +113,32 @@ export function MoodPrompts({ selectedMood, onUsePrompt, className }: MoodPrompt
   const getNewPrompt = () => {
     if (prompts.length > 0) {
       const randomIndex = Math.floor(Math.random() * prompts.length)
-      setCurrentPrompt(prompts[randomIndex])
+      const newPrompt = prompts[randomIndex]
+      setCurrentPrompt(newPrompt)
+      
+      console.log('🔄 [MoodPrompts] New prompt selected:', {
+        promptId: newPrompt.id,
+        category: newPrompt.category,
+        promptPreview: newPrompt.prompt.substring(0, 50) + '...'
+      })
+      processMonitor.logMemoryUsage('New Mood Prompt Selected')
+    }
+  }
+
+  const handleUsePrompt = () => {
+    if (currentPrompt) {
+      console.log('✨ [MoodPrompts] Using mood prompt:', {
+        promptId: currentPrompt.id,
+        category: currentPrompt.category,
+        promptPreview: currentPrompt.prompt.substring(0, 50) + '...'
+      })
+      processMonitor.logMemoryUsage('Use Mood Prompt')
+      onUsePrompt(currentPrompt.prompt)
     }
   }
 
   useEffect(() => {
+    console.log('🎭 [MoodPrompts] Mood changed, fetching new prompts for:', selectedMood)
     fetchPrompts(selectedMood)
   }, [selectedMood])
 
@@ -146,7 +190,7 @@ export function MoodPrompts({ selectedMood, onUsePrompt, className }: MoodPrompt
           
           <div className="flex flex-col sm:flex-row gap-3">
             <Button
-              onClick={() => onUsePrompt(currentPrompt.prompt)}
+              onClick={handleUsePrompt}
               className="flex-1 h-11 bg-mistblue-200 hover:bg-darkersage-300 transition-all duration-200 text-charcoal-900 font-medium"
             >
               <Sparkles className="h-4 w-4 mr-2" />

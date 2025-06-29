@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { RefreshCw, PenTool } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { Database } from '@/types/database'
+import { processMonitor } from '@/lib/processMonitor'
 
 type WritingPrompt = Database['public']['Tables']['writing_prompts']['Row']
 
@@ -44,7 +45,10 @@ export function WritingPrompt({ onUsePrompt }: WritingPromptProps) {
   const [loading, setLoading] = useState(false)
 
   const fetchRandomPrompt = async () => {
+    console.log('💡 [WritingPrompt] Fetching random prompt...')
     setLoading(true)
+    processMonitor.logMemoryUsage('Before Fetch Prompt')
+
     try {
       // Only fetch prompts from "good mood" categories and general
       const goodMoodCategories = ['happy', 'excited', 'peaceful', 'grateful', 'energetic', 'general']
@@ -55,22 +59,54 @@ export function WritingPrompt({ onUsePrompt }: WritingPromptProps) {
         .in('category', goodMoodCategories)
         .order('created_at', { ascending: false })
 
-      if (error) throw error
+      if (error) {
+        console.error('🚨 [WritingPrompt] Error fetching prompts:', error)
+        throw error
+      }
 
       if (data && data.length > 0) {
         const randomIndex = Math.floor(Math.random() * data.length)
-        setPrompt(data[randomIndex])
+        const selectedPrompt = data[randomIndex]
+        setPrompt(selectedPrompt)
+        
+        console.log('✅ [WritingPrompt] Random prompt selected:', {
+          id: selectedPrompt.id,
+          category: selectedPrompt.category,
+          promptPreview: selectedPrompt.prompt.substring(0, 50) + '...'
+        })
+      } else {
+        console.warn('⚠️ [WritingPrompt] No prompts found in database')
       }
+
+      processMonitor.logMemoryUsage('After Fetch Prompt')
     } catch (error) {
-      console.error('Error fetching writing prompt:', error)
+      console.error('🚨 [WritingPrompt] Error fetching writing prompt:', error)
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
+    console.log('💡 [WritingPrompt] Component mounted, fetching initial prompt')
     fetchRandomPrompt()
   }, [])
+
+  const handleUsePrompt = () => {
+    if (prompt) {
+      console.log('✨ [WritingPrompt] Using prompt:', {
+        id: prompt.id,
+        category: prompt.category,
+        promptPreview: prompt.prompt.substring(0, 50) + '...'
+      })
+      processMonitor.logMemoryUsage('Use Writing Prompt')
+      onUsePrompt(prompt.prompt)
+    }
+  }
+
+  const handleRefreshPrompt = () => {
+    console.log('🔄 [WritingPrompt] Refreshing prompt')
+    fetchRandomPrompt()
+  }
 
   if (!prompt) {
     return (
@@ -108,7 +144,7 @@ export function WritingPrompt({ onUsePrompt }: WritingPromptProps) {
           
           <div className="flex flex-col sm:flex-row gap-3">
             <Button
-              onClick={() => onUsePrompt(prompt.prompt)}
+              onClick={handleUsePrompt}
               className="flex-1 bg-mistblue-200 hover:bg-darkersage-300 transition-all duration-200 text-charcoal-900"
             >
               <PenTool className="h-4 w-4 mr-2" />
@@ -116,7 +152,7 @@ export function WritingPrompt({ onUsePrompt }: WritingPromptProps) {
             </Button>
             <Button
               variant="outline"
-              onClick={fetchRandomPrompt}
+              onClick={handleRefreshPrompt}
               disabled={loading}
               className="sm:w-auto hover:bg-sage-50 border-sage-200 text-charcoal-700"
             >
