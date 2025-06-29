@@ -123,7 +123,7 @@ export default function DashboardPage() {
   if (showForm) {
     return (
       <ProtectedRoute>
-        <div className="min-h-screen bg-sand-100 dark:bg-background">
+        <div className="min-h-screen bg-sand-100">
           <Header />
           <div className="container mx-auto px-4 py-8">
             <div className="max-w-4xl mx-auto">
@@ -146,7 +146,7 @@ export default function DashboardPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-sand-100 dark:bg-background">
+      <div className="min-h-screen bg-sand-100">
         <Header onNewEntry={handleCreateEntry} />
         
         <div className="container mx-auto px-4 py-8">
@@ -157,18 +157,18 @@ export default function DashboardPage() {
             {/* Search and Filter Section */}
             <div className="flex flex-col sm:flex-row gap-4 items-center">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mutedgray-400 dark:text-muted-foreground h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mutedgray-400 h-4 w-4" />
                 <Input
                   placeholder="Search your entries..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 h-11 bg-white/80 dark:bg-card/80 backdrop-blur-sm border-sage-200 dark:border-border focus:border-sage-400 dark:focus:border-ring"
+                  className="pl-10 h-11 bg-white/80 backdrop-blur-sm border-sage-200 focus:border-sage-400"
                 />
               </div>
               <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-mutedgray-500 dark:text-muted-foreground" />
+                <Filter className="h-4 w-4 text-mutedgray-500" />
                 <Select value={moodFilter} onValueChange={setMoodFilter}>
-                  <SelectTrigger className="w-40 h-11 bg-white/80 dark:bg-card/80 backdrop-blur-sm border-sage-200 dark:border-border focus:border-sage-400 dark:focus:border-ring">
+                  <SelectTrigger className="w-40 h-11 bg-white/80 backdrop-blur-sm border-sage-200 focus:border-sage-400">
                     <SelectValue placeholder="Filter by mood" />
                   </SelectTrigger>
                   <SelectContent>
@@ -187,26 +187,26 @@ export default function DashboardPage() {
             {loading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[...Array(6)].map((_, i) => (
-                  <div key={i} className="bg-white/80 dark:bg-card/80 rounded-lg p-6 animate-pulse">
-                    <div className="h-4 bg-sage-200 dark:bg-muted rounded w-3/4 mb-4"></div>
-                    <div className="h-4 bg-sage-200 dark:bg-muted rounded w-1/2 mb-4"></div>
-                    <div className="h-20 bg-sage-200 dark:bg-muted rounded mb-4"></div>
-                    <div className="h-8 bg-sage-200 dark:bg-muted rounded w-1/3"></div>
+                  <div key={i} className="bg-white/80 rounded-lg p-6 animate-pulse">
+                    <div className="h-4 bg-sage-200 rounded w-3/4 mb-4"></div>
+                    <div className="h-4 bg-sage-200 rounded w-1/2 mb-4"></div>
+                    <div className="h-20 bg-sage-200 rounded mb-4"></div>
+                    <div className="h-8 bg-sage-200 rounded w-1/3"></div>
                   </div>
                 ))}
               </div>
             ) : filteredEntries.length === 0 ? (
               <div className="text-center py-16">
-                <div className="w-24 h-24 bg-sage-200 dark:bg-muted rounded-2xl mx-auto mb-6 flex items-center justify-center">
-                  <Plus className="h-12 w-12 text-charcoal-900 dark:text-foreground" />
+                <div className="w-24 h-24 bg-sage-200 rounded-2xl mx-auto mb-6 flex items-center justify-center">
+                  <Plus className="h-12 w-12 text-charcoal-900" />
                 </div>
-                <h3 className="text-2xl font-semibold text-charcoal-800 dark:text-foreground mb-4">
+                <h3 className="text-2xl font-semibold text-charcoal-800 mb-4">
                   {searchTerm || moodFilter !== 'all'
                     ? 'No entries found'
                     : 'Start your journaling journey'
                   }
                 </h3>
-                <p className="text-mutedgray-500 dark:text-muted-foreground mb-8 max-w-md mx-auto">
+                <p className="text-mutedgray-500 mb-8 max-w-md mx-auto">
                   {searchTerm || moodFilter !== 'all'
                     ? 'Try adjusting your search or filter to find more entries.'
                     : 'Create your first entry to begin capturing your thoughts and memories.'
@@ -214,7 +214,7 @@ export default function DashboardPage() {
                 </p>
                 <Button
                   onClick={handleCreateEntry}
-                  className="bg-mistblue-200 hover:bg-darkersage-300 dark:bg-primary dark:hover:bg-primary/90 text-charcoal-900 dark:text-primary-foreground"
+                  className="bg-mistblue-200 hover:bg-darkersage-300 text-charcoal-900"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Create Your First Entry
