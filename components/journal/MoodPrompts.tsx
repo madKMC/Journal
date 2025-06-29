@@ -126,8 +126,8 @@ export function MoodPrompts({ selectedMood, onUsePrompt, className }: MoodPrompt
       </CardHeader>
       <CardContent className="pt-0">
         <div className="space-y-5">
-          <div className="bg-white/60 rounded-lg p-4 border border-sage-100">
-            <p className="text-charcoal-700 leading-relaxed font-medium text-lg text-center">
+          <div className="bg-white/80 rounded-lg p-5 border border-sage-200 shadow-sm">
+            <p className="text-charcoal-900 leading-relaxed font-semibold text-lg text-center">
               "{currentPrompt.prompt}"
             </p>
           </div>
