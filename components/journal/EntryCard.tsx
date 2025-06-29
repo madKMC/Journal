@@ -97,12 +97,23 @@ export function EntryCard({ entry, onEdit, onDelete, onView }: EntryCardProps) {
     }
   }
 
-  const truncateText = (text: string, maxLength: number) => {
-    // Strip HTML tags for preview
-    const strippedText = text.replace(/<[^>]*>/g, '')
-    if (strippedText.length <= maxLength) return strippedText
-    return strippedText.substring(0, maxLength) + '...'
+  const truncateContent = (content: string, maxLength: number) => {
+    // Check if content contains HTML tags (rich text)
+    const isRichText = /<[^>]*>/.test(content)
+    
+    if (isRichText) {
+      // For rich text, we'll truncate the HTML but preserve some basic formatting
+      const truncatedHtml = content.length <= maxLength ? content : content.substring(0, maxLength) + '...'
+      return truncatedHtml
+    } else {
+      // For plain text, just truncate normally
+      if (content.length <= maxLength) return content
+      return content.substring(0, maxLength) + '...'
+    }
   }
+
+  const truncatedContent = truncateContent(entry.content, 200)
+  const isRichText = /<[^>]*>/.test(entry.content)
 
   return (
     <Card className="group hover:shadow-lg transition-all duration-200 border-0 bg-white/90 backdrop-blur-sm hover:bg-white/95">
@@ -151,9 +162,16 @@ export function EntryCard({ entry, onEdit, onDelete, onView }: EntryCardProps) {
             </div>
           )}
           
-          <p className="text-charcoal-600 leading-relaxed">
-            {truncateText(entry.content, 200)}
-          </p>
+          <div className="text-charcoal-600 leading-relaxed">
+            {isRichText ? (
+              <div 
+                className="prose prose-sm max-w-none [&_strong]:font-semibold [&_em]:italic [&_ul]:list-disc [&_ul]:ml-4 [&_ol]:list-decimal [&_ol]:ml-4 [&_li]:mb-1 [&_blockquote]:border-l-2 [&_blockquote]:border-sage-300 [&_blockquote]:pl-2 [&_blockquote]:italic [&_blockquote]:text-mutedgray-600 [&_p]:mb-2 [&_p:last-child]:mb-0"
+                dangerouslySetInnerHTML={{ __html: truncatedContent }}
+              />
+            ) : (
+              <p>{truncatedContent}</p>
+            )}
+          </div>
           
           <div className="flex items-center justify-between pt-2">
             <Button

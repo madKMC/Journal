@@ -22,19 +22,18 @@ const moodLabels: Record<string, string> = {
   general: 'General',
 }
 
-// Helper function to convert HTML to formatted text with basic styling
-const convertHtmlToFormattedText = (html: string): Array<{text: string, style: 'normal' | 'bold' | 'italic'}> => {
-  // Create a temporary div to parse HTML
+// Helper function to convert HTML to formatted text with proper structure
+const convertHtmlToFormattedText = (html: string): Array<{text: string, style: 'normal' | 'bold' | 'italic', type: 'text' | 'bullet' | 'number' | 'quote' | 'newline'}> => {
   const tmp = document.createElement('div')
   tmp.innerHTML = html
   
-  const result: Array<{text: string, style: 'normal' | 'bold' | 'italic'}> = []
+  const result: Array<{text: string, style: 'normal' | 'bold' | 'italic', type: 'text' | 'bullet' | 'number' | 'quote' | 'newline'}> = []
   
-  const processNode = (node: Node) => {
+  const processNode = (node: Node, listType?: 'ul' | 'ol', listIndex?: number) => {
     if (node.nodeType === Node.TEXT_NODE) {
       const text = node.textContent || ''
       if (text.trim()) {
-        result.push({ text: text, style: 'normal' })
+        result.push({ text: text, style: 'normal', type: 'text' })
       }
     } else if (node.nodeType === Node.ELEMENT_NODE) {
       const element = node as Element
@@ -43,60 +42,67 @@ const convertHtmlToFormattedText = (html: string): Array<{text: string, style: '
       switch (tagName) {
         case 'strong':
         case 'b':
-          // Bold text
           const boldText = element.textContent || ''
           if (boldText.trim()) {
-            result.push({ text: boldText, style: 'bold' })
+            result.push({ text: boldText, style: 'bold', type: 'text' })
           }
           break
         case 'em':
         case 'i':
-          // Italic text
           const italicText = element.textContent || ''
           if (italicText.trim()) {
-            result.push({ text: italicText, style: 'italic' })
+            result.push({ text: italicText, style: 'italic', type: 'text' })
           }
           break
         case 'p':
         case 'div':
-          // Process children and add line break
           for (const child of Array.from(element.childNodes)) {
-            processNode(child)
+            processNode(child, listType, listIndex)
           }
-          result.push({ text: '\n', style: 'normal' })
+          result.push({ text: '', style: 'normal', type: 'newline' })
           break
         case 'br':
-          result.push({ text: '\n', style: 'normal' })
+          result.push({ text: '', style: 'normal', type: 'newline' })
           break
         case 'ul':
-        case 'ol':
-          // Process list items
           for (const child of Array.from(element.childNodes)) {
             if (child.nodeType === Node.ELEMENT_NODE && (child as Element).tagName.toLowerCase() === 'li') {
-              result.push({ text: '• ', style: 'normal' })
-              processNode(child)
-              result.push({ text: '\n', style: 'normal' })
+              processNode(child, 'ul')
+              result.push({ text: '', style: 'normal', type: 'newline' })
+            }
+          }
+          break
+        case 'ol':
+          let index = 1
+          for (const child of Array.from(element.childNodes)) {
+            if (child.nodeType === Node.ELEMENT_NODE && (child as Element).tagName.toLowerCase() === 'li') {
+              processNode(child, 'ol', index)
+              result.push({ text: '', style: 'normal', type: 'newline' })
+              index++
             }
           }
           break
         case 'li':
-          // List item content
+          if (listType === 'ul') {
+            result.push({ text: '• ', style: 'normal', type: 'bullet' })
+          } else if (listType === 'ol' && listIndex) {
+            result.push({ text: `${listIndex}. `, style: 'normal', type: 'number' })
+          }
           for (const child of Array.from(element.childNodes)) {
-            processNode(child)
+            processNode(child, listType, listIndex)
           }
           break
         case 'blockquote':
-          result.push({ text: '"', style: 'italic' })
-          for (const child of Array.from(element.childNodes)) {
-            processNode(child)
+          result.push({ text: '', style: 'normal', type: 'newline' })
+          const quoteText = element.textContent || ''
+          if (quoteText.trim()) {
+            result.push({ text: `"${quoteText.trim()}"`, style: 'italic', type: 'quote' })
           }
-          result.push({ text: '"', style: 'italic' })
-          result.push({ text: '\n', style: 'normal' })
+          result.push({ text: '', style: 'normal', type: 'newline' })
           break
         default:
-          // Process children for other elements
           for (const child of Array.from(element.childNodes)) {
-            processNode(child)
+            processNode(child, listType, listIndex)
           }
           break
       }
@@ -108,16 +114,42 @@ const convertHtmlToFormattedText = (html: string): Array<{text: string, style: '
 }
 
 // Helper function to split formatted text into lines that fit within a given width
-const splitFormattedTextToLines = (pdf: jsPDF, formattedText: Array<{text: string, style: 'normal' | 'bold' | 'italic'}>, maxWidth: number): Array<Array<{text: string, style: 'normal' | 'bold' | 'italic'}>> => {
-  const lines: Array<Array<{text: string, style: 'normal' | 'bold' | 'italic'}>> = []
-  let currentLine: Array<{text: string, style: 'normal' | 'bold' | 'italic'}> = []
+const splitFormattedTextToLines = (pdf: jsPDF, formattedText: Array<{text: string, style: 'normal' | 'bold' | 'italic', type: 'text' | 'bullet' | 'number' | 'quote' | 'newline'}>, maxWidth: number): Array<Array<{text: string, style: 'normal' | 'bold' | 'italic', type: 'text' | 'bullet' | 'number' | 'quote' | 'newline'}>> => {
+  const lines: Array<Array<{text: string, style: 'normal' | 'bold' | 'italic', type: 'text' | 'bullet' | 'number' | 'quote' | 'newline'}>> = []
+  let currentLine: Array<{text: string, style: 'normal' | 'bold' | 'italic', type: 'text' | 'bullet' | 'number' | 'quote' | 'newline'}> = []
   let currentLineWidth = 0
   
   for (const segment of formattedText) {
-    if (segment.text === '\n') {
+    if (segment.type === 'newline') {
       lines.push([...currentLine])
       currentLine = []
       currentLineWidth = 0
+      continue
+    }
+    
+    if (segment.type === 'quote') {
+      // Handle blockquotes on their own line
+      if (currentLine.length > 0) {
+        lines.push([...currentLine])
+        currentLine = []
+        currentLineWidth = 0
+      }
+      lines.push([segment])
+      continue
+    }
+    
+    if (segment.type === 'bullet' || segment.type === 'number') {
+      // Start a new line for list items
+      if (currentLine.length > 0) {
+        lines.push([...currentLine])
+        currentLine = []
+        currentLineWidth = 0
+      }
+      currentLine.push(segment)
+      
+      // Set font style to measure width
+      pdf.setFont('helvetica', 'normal')
+      currentLineWidth = pdf.getTextWidth(segment.text)
       continue
     }
     
@@ -141,10 +173,10 @@ const splitFormattedTextToLines = (pdf: jsPDF, formattedText: Array<{text: strin
       
       if (currentLineWidth + wordWidth > maxWidth && currentLine.length > 0) {
         lines.push([...currentLine])
-        currentLine = [{ text: textToAdd, style: segment.style }]
+        currentLine = [{ text: textToAdd, style: segment.style, type: segment.type }]
         currentLineWidth = wordWidth
       } else {
-        currentLine.push({ text: textToAdd, style: segment.style })
+        currentLine.push({ text: textToAdd, style: segment.style, type: segment.type })
         currentLineWidth += wordWidth
       }
     }
@@ -158,8 +190,15 @@ const splitFormattedTextToLines = (pdf: jsPDF, formattedText: Array<{text: strin
 }
 
 // Helper function to render a line with mixed formatting
-const renderFormattedLine = (pdf: jsPDF, line: Array<{text: string, style: 'normal' | 'bold' | 'italic'}>, x: number, y: number) => {
+const renderFormattedLine = (pdf: jsPDF, line: Array<{text: string, style: 'normal' | 'bold' | 'italic', type: 'text' | 'bullet' | 'number' | 'quote' | 'newline'}>, x: number, y: number) => {
   let currentX = x
+  
+  // Check if this is a quote line
+  const isQuote = line.some(segment => segment.type === 'quote')
+  if (isQuote) {
+    // Indent quotes
+    currentX = x + 10
+  }
   
   for (const segment of line) {
     if (segment.style === 'bold') {
