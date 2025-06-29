@@ -82,8 +82,10 @@ export function EntryCard({ entry, onEdit, onDelete, onView }: EntryCardProps) {
   }
 
   const truncateText = (text: string, maxLength: number) => {
-    if (text.length <= maxLength) return text
-    return text.substring(0, maxLength) + '...'
+    // Strip HTML tags for preview
+    const strippedText = text.replace(/<[^>]*>/g, '')
+    if (strippedText.length <= maxLength) return strippedText
+    return strippedText.substring(0, maxLength) + '...'
   }
 
   return (

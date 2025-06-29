@@ -73,6 +73,9 @@ const moodLabels: Record<string, string> = {
 export function EntryView({ entry, open, onClose, onEdit }: EntryViewProps) {
   if (!entry) return null
 
+  // Check if content contains HTML tags (rich text)
+  const isRichText = /<[^>]*>/.test(entry.content)
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -131,9 +134,16 @@ export function EntryView({ entry, open, onClose, onEdit }: EntryViewProps) {
           )}
 
           <div className="prose prose-lg max-w-none">
-            <div className="whitespace-pre-wrap text-charcoal-700 leading-relaxed">
-              {entry.content}
-            </div>
+            {isRichText ? (
+              <div 
+                className="text-charcoal-700 leading-relaxed prose prose-sm max-w-none [&_strong]:font-semibold [&_em]:italic [&_ul]:list-disc [&_ul]:ml-6 [&_ol]:list-decimal [&_ol]:ml-6 [&_li]:mb-1 [&_blockquote]:border-l-4 [&_blockquote]:border-sage-300 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-mutedgray-600"
+                dangerouslySetInnerHTML={{ __html: entry.content }}
+              />
+            ) : (
+              <div className="whitespace-pre-wrap text-charcoal-700 leading-relaxed">
+                {entry.content}
+              </div>
+            )}
           </div>
 
           {entry.updated_at !== entry.created_at && (

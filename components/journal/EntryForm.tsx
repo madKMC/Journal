@@ -7,11 +7,11 @@ import * as z from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { MoodPrompts } from './MoodPrompts'
+import { RichTextEditor } from './RichTextEditor'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
@@ -63,6 +63,7 @@ const moodCategories = {
 
 export function EntryForm({ entry, onSuccess, onCancel, initialPrompt }: EntryFormProps) {
   const [loading, setLoading] = useState(false)
+  const [content, setContent] = useState(entry?.content || (initialPrompt ? `<p><strong>Prompt:</strong> ${initialPrompt}</p><p><br></p>` : ''))
   const { user } = useAuth()
 
   const {
@@ -83,13 +84,24 @@ export function EntryForm({ entry, onSuccess, onCancel, initialPrompt }: EntryFo
 
   const watchedMood = watch('mood')
   const watchedIsPrivate = watch('is_private')
-  const watchedContent = watch('content')
 
   const handleUsePrompt = (prompt: string) => {
-    const currentContent = watchedContent || ''
-    const newContent = currentContent 
-      ? `${currentContent}\n\nPrompt: ${prompt}\n\n`
-      : `Prompt: ${prompt}\n\n`
+    const newContent = content 
+      ? `${content}<p><br></p><p><strong>Prompt:</strong> ${prompt}</p><p><br></p>`
+      : `<p><strong>Prompt:</strong> ${prompt}</p><p><br></p>`
+    setContent(newContent)
+    setValue('content', stripHtml(newContent))
+  }
+
+  // Helper function to strip HTML for form validation
+  const stripHtml = (html: string) => {
+    const tmp = document.createElement('div')
+    tmp.innerHTML = html
+    return tmp.textContent || tmp.innerText || ''
+  }
+
+  const handleContentChange = (newContent: string) => {
+    setContent(newContent)
     setValue('content', newContent)
   }
 
@@ -100,6 +112,7 @@ export function EntryForm({ entry, onSuccess, onCancel, initialPrompt }: EntryFo
     try {
       const entryData = {
         ...data,
+        content: content, // Use the rich text content
         user_id: user.id,
         image_url: entry?.image_url || null,
         updated_at: new Date().toISOString(),
@@ -206,11 +219,11 @@ export function EntryForm({ entry, onSuccess, onCancel, initialPrompt }: EntryFo
               <Label htmlFor="content" className="text-base font-medium text-charcoal-700">
                 Content
               </Label>
-              <Textarea
-                id="content"
-                placeholder="Write your thoughts here..."
-                {...register('content')}
-                className="min-h-[300px] resize-y text-base leading-relaxed border-sage-200 focus:border-sage-400"
+              <RichTextEditor
+                value={content}
+                onChange={handleContentChange}
+                placeholder="Write your thoughts here... Use the toolbar above for formatting."
+                className="border-sage-200 focus:border-sage-400"
               />
               {errors.content && (
                 <p className="text-sm text-red-500">{errors.content.message}</p>
