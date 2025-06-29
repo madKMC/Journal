@@ -31,10 +31,10 @@ export function Header({ onNewEntry }: HeaderProps) {
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-mistblue-200 rounded-lg flex items-center justify-center">
-                <span className="text-charcoal-900 font-bold text-sm">J</span>
+                <span className="text-charcoal-900 font-bold text-sm">S</span>
               </div>
               <h1 className="text-xl font-bold text-charcoal-900">
-                My Journal
+                SoulScriptJournal
               </h1>
             </div>
           </div>

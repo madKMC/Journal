@@ -126,7 +126,7 @@ export function WritingPrompt({ onUsePrompt }: WritingPromptProps) {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold text-charcoal-800">
-            Daily Writing Prompt
+            Soul Inspiration
           </CardTitle>
           <Badge 
             variant="secondary" 
@@ -148,7 +148,7 @@ export function WritingPrompt({ onUsePrompt }: WritingPromptProps) {
               className="flex-1 bg-mistblue-200 hover:bg-darkersage-300 transition-all duration-200 text-charcoal-900"
             >
               <PenTool className="h-4 w-4 mr-2" />
-              Use This Prompt
+              Express Your Soul
             </Button>
             <Button
               variant="outline"
@@ -157,7 +157,7 @@ export function WritingPrompt({ onUsePrompt }: WritingPromptProps) {
               className="sm:w-auto hover:bg-sage-50 border-sage-200 text-charcoal-700"
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              New Prompt
+              New Inspiration
             </Button>
           </div>
         </div>

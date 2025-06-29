@@ -72,7 +72,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           toast.error(error.message)
         }
       } else {
-        toast.success(mode === 'login' ? 'Welcome back!' : 'Account created successfully!')
+        toast.success(mode === 'login' ? 'Welcome back to SoulScriptJournal!' : 'Welcome to SoulScriptJournal!')
         router.push('/dashboard')
       }
     } catch (error) {
@@ -87,15 +87,15 @@ export function AuthForm({ mode }: AuthFormProps) {
       <Card className="w-full max-w-md shadow-2xl border-0 bg-white/90 backdrop-blur-sm">
         <CardHeader className="space-y-1 text-center">
           <div className="w-12 h-12 bg-sage-200 rounded-xl mx-auto mb-4 flex items-center justify-center">
-            <span className="text-charcoal-900 font-bold text-xl">J</span>
+            <span className="text-charcoal-900 font-bold text-xl">S</span>
           </div>
           <CardTitle className="text-2xl font-bold text-charcoal-900">
-            {mode === 'login' ? 'Welcome back' : 'Create account'}
+            {mode === 'login' ? 'Welcome back' : 'Join SoulScriptJournal'}
           </CardTitle>
           <CardDescription className="text-mutedgray-500">
             {mode === 'login' 
-              ? 'Sign in to your journal to continue your story' 
-              : 'Start your journaling journey today'
+              ? 'Sign in to continue your soul\'s journey' 
+              : 'Begin your journey of self-expression and reflection'
             }
           </CardDescription>
         </CardHeader>
@@ -185,18 +185,18 @@ export function AuthForm({ mode }: AuthFormProps) {
               disabled={loading}
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {mode === 'login' ? 'Sign In' : 'Create Account'}
+              {mode === 'login' ? 'Sign In' : 'Begin Your Journey'}
             </Button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-mutedgray-500">
-              {mode === 'login' ? "Don't have an account?" : 'Already have an account?'}{' '}
+              {mode === 'login' ? "New to SoulScriptJournal?" : 'Already have an account?'}{' '}
               <a
                 href={mode === 'login' ? '/auth/signup' : '/auth/login'}
                 className="text-sage-600 hover:text-sage-800 font-medium transition-colors"
               >
-                {mode === 'login' ? 'Sign up' : 'Sign in'}
+                {mode === 'login' ? 'Start your journey' : 'Sign in'}
               </a>
             </p>
           </div>

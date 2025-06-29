@@ -1,6 +1,6 @@
-# My Journal
+# SoulScriptJournal
 
-A beautiful, secure journaling application built with Next.js, Supabase, and Tailwind CSS.
+A beautiful, secure journaling application built with Next.js, Supabase, and Tailwind CSS designed for your soul's expression and reflection.
 
 ## Features
 
@@ -11,6 +11,7 @@ A beautiful, secure journaling application built with Next.js, Supabase, and Tai
 - 🔐 Secure authentication with Supabase
 - 📱 Responsive design for all devices
 - 🎨 Beautiful, production-ready UI
+- ✨ Soul-inspired writing prompts and guidance
 
 ## Getting Started
 
@@ -24,7 +25,7 @@ A beautiful, secure journaling application built with Next.js, Supabase, and Tai
 1. Clone the repository:
    ```bash
    git clone <your-repo-url>
-   cd my-journal
+   cd soulscriptjournal
    ```
 
 2. Install dependencies:
@@ -89,6 +90,10 @@ Make sure to set the environment variables in your deployment platform's setting
 - **Icons**: Lucide React
 - **PDF Generation**: jsPDF
 - **Form Handling**: React Hook Form with Zod validation
+
+## Philosophy
+
+SoulScriptJournal is more than just a journaling app - it's a sacred space for your thoughts, emotions, and spiritual journey. We believe that writing is a powerful tool for self-discovery and healing, and our platform is designed to support your soul's expression in a beautiful, secure environment.
 
 ## Contributing
 

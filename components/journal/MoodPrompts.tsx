@@ -168,7 +168,7 @@ export function MoodPrompts({ selectedMood, onUsePrompt, className }: MoodPrompt
               <Lightbulb className="h-5 w-5 text-sage-700" />
             </div>
             <CardTitle className="text-lg font-semibold text-charcoal-800">
-              Writing Inspiration
+              Soul Inspiration
             </CardTitle>
           </div>
           <Badge 
@@ -194,7 +194,7 @@ export function MoodPrompts({ selectedMood, onUsePrompt, className }: MoodPrompt
               className="flex-1 h-11 bg-mistblue-200 hover:bg-darkersage-300 transition-all duration-200 text-charcoal-900 font-medium"
             >
               <Sparkles className="h-4 w-4 mr-2" />
-              Use This Prompt
+              Express Your Soul
             </Button>
             <Button
               variant="outline"
@@ -203,7 +203,7 @@ export function MoodPrompts({ selectedMood, onUsePrompt, className }: MoodPrompt
               className="sm:w-auto h-11 hover:bg-sage-50 border-sage-200 text-charcoal-700 font-medium"
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              New Prompt
+              New Inspiration
             </Button>
           </div>
         </div>

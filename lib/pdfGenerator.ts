@@ -241,7 +241,7 @@ export const generateEntryPDF = async (entry: JournalEntry): Promise<void> => {
     pdf.setFont('helvetica', 'normal')
     pdf.setFontSize(12)
     pdf.setTextColor(100, 100, 100)
-    pdf.text('My Journal', margin, yPosition)
+    pdf.text('SoulScriptJournal', margin, yPosition)
     
     // Add date on the right
     const dateText = format(new Date(entry.created_at), 'MMMM d, yyyy')
@@ -384,7 +384,7 @@ export const generateEntryPDF = async (entry: JournalEntry): Promise<void> => {
     // Generate filename
     const safeTitle = entry.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()
     const dateStr = format(new Date(entry.created_at), 'yyyy-MM-dd')
-    const filename = `journal_entry_${dateStr}_${safeTitle}.pdf`
+    const filename = `soulscript_entry_${dateStr}_${safeTitle}.pdf`
 
     // Save the PDF
     pdf.save(filename)
@@ -414,7 +414,7 @@ export const generateEntryPDF = async (entry: JournalEntry): Promise<void> => {
   }
 }
 
-export const generateMultipleEntriesPDF = async (entries: JournalEntry[], title: string = 'Journal Entries'): Promise<void> => {
+export const generateMultipleEntriesPDF = async (entries: JournalEntry[], title: string = 'SoulScript Journal Entries'): Promise<void> => {
   let pdf: jsPDF | null = null
   
   try {
@@ -595,7 +595,7 @@ export const generateMultipleEntriesPDF = async (entries: JournalEntry[], title:
 
     // Generate filename
     const dateStr = format(new Date(), 'yyyy-MM-dd')
-    const filename = `journal_entries_${dateStr}.pdf`
+    const filename = `soulscript_journal_entries_${dateStr}.pdf`
 
     // Save the PDF
     pdf.save(filename)
