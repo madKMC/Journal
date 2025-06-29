@@ -1,27 +1,8 @@
 import jsPDF from 'jspdf'
-import html2canvas from 'html2canvas'
 import { format } from 'date-fns'
 import { Database } from '@/types/database'
 
 type JournalEntry = Database['public']['Tables']['journal_entries']['Row']
-
-const moodEmojis: Record<string, string> = {
-  happy: '😊',
-  sad: '😢',
-  excited: '🎉',
-  peaceful: '😌',
-  anxious: '😰',
-  grateful: '🙏',
-  reflective: '🤔',
-  energetic: '⚡',
-  overwhelmed: '😵',
-  insecure: '😔',
-  angry: '😠',
-  numb: '😶',
-  burnt_out: '😴',
-  lonely: '😞',
-  general: '😐',
-}
 
 const moodLabels: Record<string, string> = {
   happy: 'Happy',
@@ -41,42 +22,157 @@ const moodLabels: Record<string, string> = {
   general: 'General',
 }
 
-// Helper function to strip HTML tags and convert to plain text
-const stripHtml = (html: string): string => {
-  // Create a temporary div element
+// Helper function to convert HTML to formatted text with basic styling
+const convertHtmlToFormattedText = (html: string): Array<{text: string, style: 'normal' | 'bold' | 'italic'}> => {
+  // Create a temporary div to parse HTML
   const tmp = document.createElement('div')
   tmp.innerHTML = html
   
-  // Handle common HTML elements
-  const text = tmp.textContent || tmp.innerText || ''
+  const result: Array<{text: string, style: 'normal' | 'bold' | 'italic'}> = []
   
-  // Clean up extra whitespace
-  return text.replace(/\s+/g, ' ').trim()
-}
-
-// Helper function to split text into lines that fit within a given width
-const splitTextToLines = (pdf: jsPDF, text: string, maxWidth: number): string[] => {
-  const words = text.split(' ')
-  const lines: string[] = []
-  let currentLine = ''
-
-  for (const word of words) {
-    const testLine = currentLine ? `${currentLine} ${word}` : word
-    const textWidth = pdf.getTextWidth(testLine)
-    
-    if (textWidth > maxWidth && currentLine) {
-      lines.push(currentLine)
-      currentLine = word
-    } else {
-      currentLine = testLine
+  const processNode = (node: Node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const text = node.textContent || ''
+      if (text.trim()) {
+        result.push({ text: text, style: 'normal' })
+      }
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      const element = node as Element
+      const tagName = element.tagName.toLowerCase()
+      
+      switch (tagName) {
+        case 'strong':
+        case 'b':
+          // Bold text
+          const boldText = element.textContent || ''
+          if (boldText.trim()) {
+            result.push({ text: boldText, style: 'bold' })
+          }
+          break
+        case 'em':
+        case 'i':
+          // Italic text
+          const italicText = element.textContent || ''
+          if (italicText.trim()) {
+            result.push({ text: italicText, style: 'italic' })
+          }
+          break
+        case 'p':
+        case 'div':
+          // Process children and add line break
+          for (const child of Array.from(element.childNodes)) {
+            processNode(child)
+          }
+          result.push({ text: '\n', style: 'normal' })
+          break
+        case 'br':
+          result.push({ text: '\n', style: 'normal' })
+          break
+        case 'ul':
+        case 'ol':
+          // Process list items
+          for (const child of Array.from(element.childNodes)) {
+            if (child.nodeType === Node.ELEMENT_NODE && (child as Element).tagName.toLowerCase() === 'li') {
+              result.push({ text: '• ', style: 'normal' })
+              processNode(child)
+              result.push({ text: '\n', style: 'normal' })
+            }
+          }
+          break
+        case 'li':
+          // List item content
+          for (const child of Array.from(element.childNodes)) {
+            processNode(child)
+          }
+          break
+        case 'blockquote':
+          result.push({ text: '"', style: 'italic' })
+          for (const child of Array.from(element.childNodes)) {
+            processNode(child)
+          }
+          result.push({ text: '"', style: 'italic' })
+          result.push({ text: '\n', style: 'normal' })
+          break
+        default:
+          // Process children for other elements
+          for (const child of Array.from(element.childNodes)) {
+            processNode(child)
+          }
+          break
+      }
     }
   }
   
-  if (currentLine) {
+  processNode(tmp)
+  return result
+}
+
+// Helper function to split formatted text into lines that fit within a given width
+const splitFormattedTextToLines = (pdf: jsPDF, formattedText: Array<{text: string, style: 'normal' | 'bold' | 'italic'}>, maxWidth: number): Array<Array<{text: string, style: 'normal' | 'bold' | 'italic'}>> => {
+  const lines: Array<Array<{text: string, style: 'normal' | 'bold' | 'italic'}>> = []
+  let currentLine: Array<{text: string, style: 'normal' | 'bold' | 'italic'}> = []
+  let currentLineWidth = 0
+  
+  for (const segment of formattedText) {
+    if (segment.text === '\n') {
+      lines.push([...currentLine])
+      currentLine = []
+      currentLineWidth = 0
+      continue
+    }
+    
+    const words = segment.text.split(' ')
+    
+    for (let i = 0; i < words.length; i++) {
+      const word = words[i]
+      const isLastWord = i === words.length - 1
+      const textToAdd = isLastWord ? word : word + ' '
+      
+      // Set font style to measure width
+      if (segment.style === 'bold') {
+        pdf.setFont('helvetica', 'bold')
+      } else if (segment.style === 'italic') {
+        pdf.setFont('helvetica', 'italic')
+      } else {
+        pdf.setFont('helvetica', 'normal')
+      }
+      
+      const wordWidth = pdf.getTextWidth(textToAdd)
+      
+      if (currentLineWidth + wordWidth > maxWidth && currentLine.length > 0) {
+        lines.push([...currentLine])
+        currentLine = [{ text: textToAdd, style: segment.style }]
+        currentLineWidth = wordWidth
+      } else {
+        currentLine.push({ text: textToAdd, style: segment.style })
+        currentLineWidth += wordWidth
+      }
+    }
+  }
+  
+  if (currentLine.length > 0) {
     lines.push(currentLine)
   }
   
   return lines
+}
+
+// Helper function to render a line with mixed formatting
+const renderFormattedLine = (pdf: jsPDF, line: Array<{text: string, style: 'normal' | 'bold' | 'italic'}>, x: number, y: number) => {
+  let currentX = x
+  
+  for (const segment of line) {
+    if (segment.style === 'bold') {
+      pdf.setFont('helvetica', 'bold')
+    } else if (segment.style === 'italic') {
+      pdf.setFont('helvetica', 'italic')
+    } else {
+      pdf.setFont('helvetica', 'normal')
+    }
+    
+    pdf.text(segment.text, currentX, y)
+    currentX += pdf.getTextWidth(segment.text)
+  }
 }
 
 export const generateEntryPDF = async (entry: JournalEntry): Promise<void> => {
@@ -97,6 +193,7 @@ export const generateEntryPDF = async (entry: JournalEntry): Promise<void> => {
     let yPosition = margin
 
     // Add header with app branding
+    pdf.setFont('helvetica', 'normal')
     pdf.setFontSize(12)
     pdf.setTextColor(100, 100, 100)
     pdf.text('My Journal', margin, yPosition)
@@ -109,9 +206,30 @@ export const generateEntryPDF = async (entry: JournalEntry): Promise<void> => {
     yPosition += 15
 
     // Add title
+    pdf.setFont('helvetica', 'bold')
     pdf.setFontSize(24)
     pdf.setTextColor(51, 51, 51) // Dark gray
-    const titleLines = splitTextToLines(pdf, entry.title, contentWidth)
+    
+    // Split title into lines if needed
+    const words = entry.title.split(' ')
+    let currentLine = ''
+    const titleLines: string[] = []
+    
+    for (const word of words) {
+      const testLine = currentLine ? `${currentLine} ${word}` : word
+      const textWidth = pdf.getTextWidth(testLine)
+      
+      if (textWidth > contentWidth && currentLine) {
+        titleLines.push(currentLine)
+        currentLine = word
+      } else {
+        currentLine = testLine
+      }
+    }
+    
+    if (currentLine) {
+      titleLines.push(currentLine)
+    }
     
     for (const line of titleLines) {
       if (yPosition > pageHeight - margin - 20) {
@@ -124,19 +242,20 @@ export const generateEntryPDF = async (entry: JournalEntry): Promise<void> => {
     
     yPosition += 10
 
-    // Add mood if present
+    // Add mood if present (without emoji)
     if (entry.mood) {
+      pdf.setFont('helvetica', 'normal')
       pdf.setFontSize(12)
       pdf.setTextColor(100, 100, 100)
-      const moodText = `${moodEmojis[entry.mood] || '😐'} ${moodLabels[entry.mood] || entry.mood}`
+      const moodText = moodLabels[entry.mood] || entry.mood
       pdf.text(`Mood: ${moodText}`, margin, yPosition)
       yPosition += 10
     }
 
-    // Add privacy status
+    // Add privacy status (without emoji)
     pdf.setFontSize(10)
     pdf.setTextColor(120, 120, 120)
-    const privacyText = entry.is_private ? '🔒 Private Entry' : '🌍 Public Entry'
+    const privacyText = entry.is_private ? 'Private Entry' : 'Public Entry'
     pdf.text(privacyText, margin, yPosition)
     yPosition += 15
 
@@ -145,31 +264,66 @@ export const generateEntryPDF = async (entry: JournalEntry): Promise<void> => {
     pdf.line(margin, yPosition, pageWidth - margin, yPosition)
     yPosition += 15
 
-    // Process content
+    // Process content with rich text support
     const isRichText = /<[^>]*>/.test(entry.content)
-    let contentText = entry.content
-
-    if (isRichText) {
-      // For rich text, we'll strip HTML and add basic formatting indicators
-      contentText = stripHtml(entry.content)
-    }
-
-    // Add content
-    pdf.setFontSize(11)
-    pdf.setTextColor(51, 51, 51)
-    const contentLines = splitTextToLines(pdf, contentText, contentWidth)
     
-    for (const line of contentLines) {
-      if (yPosition > pageHeight - margin - 10) {
-        pdf.addPage()
-        yPosition = margin
+    if (isRichText) {
+      // Convert HTML to formatted text
+      const formattedText = convertHtmlToFormattedText(entry.content)
+      const formattedLines = splitFormattedTextToLines(pdf, formattedText, contentWidth)
+      
+      pdf.setFontSize(11)
+      pdf.setTextColor(51, 51, 51)
+      
+      for (const line of formattedLines) {
+        if (yPosition > pageHeight - margin - 10) {
+          pdf.addPage()
+          yPosition = margin
+        }
+        
+        if (line.length > 0) {
+          renderFormattedLine(pdf, line, margin, yPosition)
+        }
+        yPosition += 6
       }
-      pdf.text(line, margin, yPosition)
-      yPosition += 6
+    } else {
+      // Plain text content
+      pdf.setFont('helvetica', 'normal')
+      pdf.setFontSize(11)
+      pdf.setTextColor(51, 51, 51)
+      
+      const words = entry.content.split(' ')
+      let currentLine = ''
+      
+      for (const word of words) {
+        const testLine = currentLine ? `${currentLine} ${word}` : word
+        const textWidth = pdf.getTextWidth(testLine)
+        
+        if (textWidth > contentWidth && currentLine) {
+          if (yPosition > pageHeight - margin - 10) {
+            pdf.addPage()
+            yPosition = margin
+          }
+          pdf.text(currentLine, margin, yPosition)
+          yPosition += 6
+          currentLine = word
+        } else {
+          currentLine = testLine
+        }
+      }
+      
+      if (currentLine) {
+        if (yPosition > pageHeight - margin - 10) {
+          pdf.addPage()
+          yPosition = margin
+        }
+        pdf.text(currentLine, margin, yPosition)
+      }
     }
 
     // Add footer with creation/update info
     const footerY = pageHeight - 15
+    pdf.setFont('helvetica', 'normal')
     pdf.setFontSize(8)
     pdf.setTextColor(150, 150, 150)
     
@@ -212,11 +366,13 @@ export const generateMultipleEntriesPDF = async (entries: JournalEntry[], title:
     let yPosition = margin
 
     // Add title page
+    pdf.setFont('helvetica', 'bold')
     pdf.setFontSize(28)
     pdf.setTextColor(51, 51, 51)
     const titleY = pageHeight / 2 - 20
     pdf.text(title, margin, titleY)
     
+    pdf.setFont('helvetica', 'normal')
     pdf.setFontSize(14)
     pdf.setTextColor(100, 100, 100)
     pdf.text(`${entries.length} ${entries.length === 1 ? 'Entry' : 'Entries'}`, margin, titleY + 15)
@@ -242,9 +398,30 @@ export const generateMultipleEntriesPDF = async (entries: JournalEntry[], title:
       }
 
       // Entry header
+      pdf.setFont('helvetica', 'bold')
       pdf.setFontSize(18)
       pdf.setTextColor(51, 51, 51)
-      const titleLines = splitTextToLines(pdf, entry.title, contentWidth)
+      
+      // Split title into lines if needed
+      const words = entry.title.split(' ')
+      let currentLine = ''
+      const titleLines: string[] = []
+      
+      for (const word of words) {
+        const testLine = currentLine ? `${currentLine} ${word}` : word
+        const textWidth = pdf.getTextWidth(testLine)
+        
+        if (textWidth > contentWidth && currentLine) {
+          titleLines.push(currentLine)
+          currentLine = word
+        } else {
+          currentLine = testLine
+        }
+      }
+      
+      if (currentLine) {
+        titleLines.push(currentLine)
+      }
       
       for (const line of titleLines) {
         if (yPosition > pageHeight - margin - 20) {
@@ -258,34 +435,74 @@ export const generateMultipleEntriesPDF = async (entries: JournalEntry[], title:
       yPosition += 5
 
       // Entry metadata
+      pdf.setFont('helvetica', 'normal')
       pdf.setFontSize(10)
       pdf.setTextColor(100, 100, 100)
       const entryDate = format(new Date(entry.created_at), 'MMMM d, yyyy')
       let metadataText = entryDate
       
       if (entry.mood) {
-        const moodText = `${moodEmojis[entry.mood] || '😐'} ${moodLabels[entry.mood] || entry.mood}`
+        const moodText = moodLabels[entry.mood] || entry.mood
         metadataText += ` • ${moodText}`
       }
       
       pdf.text(metadataText, margin, yPosition)
       yPosition += 10
 
-      // Entry content
+      // Entry content with rich text support
       const isRichText = /<[^>]*>/.test(entry.content)
-      let contentText = isRichText ? stripHtml(entry.content) : entry.content
       
       pdf.setFontSize(10)
       pdf.setTextColor(51, 51, 51)
-      const contentLines = splitTextToLines(pdf, contentText, contentWidth)
       
-      for (const line of contentLines) {
-        if (yPosition > pageHeight - margin - 10) {
-          pdf.addPage()
-          yPosition = margin
+      if (isRichText) {
+        // Convert HTML to formatted text
+        const formattedText = convertHtmlToFormattedText(entry.content)
+        const formattedLines = splitFormattedTextToLines(pdf, formattedText, contentWidth)
+        
+        for (const line of formattedLines) {
+          if (yPosition > pageHeight - margin - 10) {
+            pdf.addPage()
+            yPosition = margin
+          }
+          
+          if (line.length > 0) {
+            renderFormattedLine(pdf, line, margin, yPosition)
+          }
+          yPosition += 5
         }
-        pdf.text(line, margin, yPosition)
-        yPosition += 5
+      } else {
+        // Plain text content
+        pdf.setFont('helvetica', 'normal')
+        
+        const words = entry.content.split(' ')
+        let currentLine = ''
+        
+        for (const word of words) {
+          const testLine = currentLine ? `${currentLine} ${word}` : word
+          const textWidth = pdf.getTextWidth(testLine)
+          
+          if (textWidth > contentWidth && currentLine) {
+            if (yPosition > pageHeight - margin - 10) {
+              pdf.addPage()
+              yPosition = margin
+            }
+            pdf.text(currentLine, margin, yPosition)
+            yPosition += 5
+            currentLine = word
+          } else {
+            currentLine = testLine
+          }
+        }
+        
+        if (currentLine) {
+          if (yPosition > pageHeight - margin - 10) {
+            pdf.addPage()
+            yPosition = margin
+          }
+          pdf.text(currentLine, margin, yPosition)
+          yPosition += 5
+        }
       }
       
       // Add spacing between entries
