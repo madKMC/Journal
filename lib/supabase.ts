@@ -51,8 +51,8 @@ supabase.auth.onAuthStateChange((event, session) => {
   })
 })
 
-// Test connection on initialization
-supabase.from('journal_entries').select('count', { count: 'exact', head: true })
+// Test connection on initialization - wrap with Promise.resolve to ensure proper Promise type
+Promise.resolve(supabase.from('journal_entries').select('count', { count: 'exact', head: true }))
   .then(({ error }) => {
     if (error) {
       console.error('❌ [Supabase] Connection test failed:', error)
