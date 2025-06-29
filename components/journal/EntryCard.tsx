@@ -27,17 +27,49 @@ const moodEmojis: Record<string, string> = {
   grateful: '🙏',
   reflective: '🤔',
   energetic: '⚡',
+  overwhelmed: '😵',
+  insecure: '😔',
+  angry: '😠',
+  numb: '😶',
+  burnt_out: '😴',
+  lonely: '😞',
+  general: '😐',
 }
 
 const moodColors: Record<string, string> = {
-  happy: 'bg-blushrose-100 text-blushrose-800 border-blushrose-200',
+  happy: 'bg-yellow-100 text-yellow-800 border-yellow-200',
   sad: 'bg-blue-100 text-blue-800 border-blue-200',
   excited: 'bg-purple-100 text-purple-800 border-purple-200',
   peaceful: 'bg-sage-100 text-sage-800 border-sage-200',
   anxious: 'bg-orange-100 text-orange-800 border-orange-200',
-  grateful: 'bg-blushrose-200 text-blushrose-900 border-blushrose-300',
+  grateful: 'bg-blushrose-100 text-blushrose-800 border-blushrose-200',
   reflective: 'bg-indigo-100 text-indigo-800 border-indigo-200',
   energetic: 'bg-red-100 text-red-800 border-red-200',
+  overwhelmed: 'bg-red-200 text-red-900 border-red-300',
+  insecure: 'bg-gray-100 text-gray-800 border-gray-200',
+  angry: 'bg-red-200 text-red-900 border-red-300',
+  numb: 'bg-gray-200 text-gray-700 border-gray-300',
+  burnt_out: 'bg-gray-200 text-gray-800 border-gray-300',
+  lonely: 'bg-blue-200 text-blue-900 border-blue-300',
+  general: 'bg-gray-100 text-gray-800 border-gray-200',
+}
+
+const moodLabels: Record<string, string> = {
+  happy: 'Happy',
+  sad: 'Sad',
+  excited: 'Excited',
+  peaceful: 'Peaceful',
+  anxious: 'Anxious',
+  grateful: 'Grateful',
+  reflective: 'Reflective',
+  energetic: 'Energetic',
+  overwhelmed: 'Overwhelmed',
+  insecure: 'Insecure',
+  angry: 'Angry',
+  numb: 'Numb',
+  burnt_out: 'Burnt Out',
+  lonely: 'Lonely',
+  general: 'General',
 }
 
 export function EntryCard({ entry, onEdit, onDelete, onView }: EntryCardProps) {
@@ -68,7 +100,7 @@ export function EntryCard({ entry, onEdit, onDelete, onView }: EntryCardProps) {
               </time>
               {entry.mood && (
                 <Badge variant="secondary" className={`${moodColors[entry.mood] || 'bg-gray-100 text-gray-800'} border`}>
-                  {moodEmojis[entry.mood] || '😐'} {entry.mood}
+                  {moodEmojis[entry.mood] || '😐'} {moodLabels[entry.mood] || entry.mood}
                 </Badge>
               )}
               <div className="flex items-center text-xs text-mutedgray-500">

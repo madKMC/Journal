@@ -25,6 +25,12 @@ const moodEmojis: Record<string, string> = {
   grateful: '🙏',
   reflective: '🤔',
   energetic: '⚡',
+  overwhelmed: '😵',
+  insecure: '😔',
+  angry: '😠',
+  numb: '😶',
+  burnt_out: '😴',
+  lonely: '😞',
   general: '💭',
 }
 
@@ -37,6 +43,12 @@ const categoryColors: Record<string, string> = {
   grateful: 'bg-blushrose-100 text-blushrose-800 border-blushrose-200',
   reflective: 'bg-indigo-100 text-indigo-800 border-indigo-200',
   energetic: 'bg-red-100 text-red-800 border-red-200',
+  overwhelmed: 'bg-red-200 text-red-900 border-red-300',
+  insecure: 'bg-gray-100 text-gray-800 border-gray-200',
+  angry: 'bg-red-200 text-red-900 border-red-300',
+  numb: 'bg-gray-200 text-gray-700 border-gray-300',
+  burnt_out: 'bg-gray-200 text-gray-800 border-gray-300',
+  lonely: 'bg-blue-200 text-blue-900 border-blue-300',
   general: 'bg-gray-100 text-gray-800 border-gray-200',
 }
 

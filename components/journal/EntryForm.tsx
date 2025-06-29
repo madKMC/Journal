@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { MoodPrompts } from './MoodPrompts'
 import { supabase } from '@/lib/supabase'
@@ -35,16 +35,31 @@ interface EntryFormProps {
   initialPrompt?: string
 }
 
-const moods = [
-  { value: 'happy', label: '😊 Happy', color: 'text-amber-600' },
-  { value: 'sad', label: '😢 Sad', color: 'text-blue-600' },
-  { value: 'excited', label: '🎉 Excited', color: 'text-purple-600' },
-  { value: 'peaceful', label: '😌 Peaceful', color: 'text-green-600' },
-  { value: 'anxious', label: '😰 Anxious', color: 'text-orange-600' },
-  { value: 'grateful', label: '🙏 Grateful', color: 'text-pink-600' },
-  { value: 'reflective', label: '🤔 Reflective', color: 'text-indigo-600' },
-  { value: 'energetic', label: '⚡ Energetic', color: 'text-red-600' },
-]
+const moodCategories = {
+  'In a Good Mood': [
+    { value: 'happy', label: '😊 Happy', color: 'text-amber-600' },
+    { value: 'excited', label: '🎉 Excited', color: 'text-purple-600' },
+    { value: 'peaceful', label: '😌 Peaceful', color: 'text-green-600' },
+    { value: 'grateful', label: '🙏 Grateful', color: 'text-pink-600' },
+    { value: 'energetic', label: '⚡ Energetic', color: 'text-red-600' },
+  ],
+  'Feeling Low': [
+    { value: 'sad', label: '😢 Sad', color: 'text-blue-600' },
+    { value: 'anxious', label: '😰 Anxious', color: 'text-orange-600' },
+    { value: 'overwhelmed', label: '😵 Overwhelmed', color: 'text-red-700' },
+    { value: 'insecure', label: '😔 Insecure', color: 'text-gray-600' },
+    { value: 'angry', label: '😠 Angry', color: 'text-red-800' },
+    { value: 'numb', label: '😶 Numb', color: 'text-gray-500' },
+    { value: 'burnt_out', label: '😴 Burnt Out', color: 'text-gray-700' },
+    { value: 'lonely', label: '😞 Lonely', color: 'text-blue-700' },
+  ],
+  'Feeling Thoughtful': [
+    { value: 'reflective', label: '🤔 Reflective', color: 'text-indigo-600' },
+  ],
+  'Not Sure / No Mood': [
+    { value: 'general', label: '😐 General', color: 'text-gray-600' },
+  ],
+}
 
 export function EntryForm({ entry, onSuccess, onCancel, initialPrompt }: EntryFormProps) {
   const [loading, setLoading] = useState(false)
@@ -193,10 +208,15 @@ export function EntryForm({ entry, onSuccess, onCancel, initialPrompt }: EntryFo
                     <SelectValue placeholder="How are you feeling?" />
                   </SelectTrigger>
                   <SelectContent>
-                    {moods.map((mood) => (
-                      <SelectItem key={mood.value} value={mood.value}>
-                        <span className={mood.color}>{mood.label}</span>
-                      </SelectItem>
+                    {Object.entries(moodCategories).map(([category, moods]) => (
+                      <SelectGroup key={category}>
+                        <SelectLabel className="text-charcoal-700 font-semibold">{category}</SelectLabel>
+                        {moods.map((mood) => (
+                          <SelectItem key={mood.value} value={mood.value}>
+                            <span className={mood.color}>{mood.label}</span>
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
                     ))}
                   </SelectContent>
                 </Select>
