@@ -1,3 +1,9 @@
+// Check if we're in a Node.js environment
+const isNodeEnvironment = typeof process !== 'undefined' && 
+  process.versions && 
+  process.versions.node && 
+  typeof window === 'undefined'
+
 export class ProcessMonitor {
   private static instance: ProcessMonitor
   private startTime: number
@@ -6,8 +12,10 @@ export class ProcessMonitor {
 
   private constructor() {
     this.startTime = Date.now()
-    this.setupProcessHandlers()
-    this.logStartup()
+    if (isNodeEnvironment) {
+      this.setupProcessHandlers()
+      this.logStartup()
+    }
   }
 
   public static getInstance(): ProcessMonitor {
@@ -18,6 +26,8 @@ export class ProcessMonitor {
   }
 
   private setupProcessHandlers(): void {
+    if (!isNodeEnvironment) return
+
     // Handle graceful shutdown
     process.on('SIGTERM', () => {
       console.log('📋 [ProcessMonitor] Received SIGTERM, shutting down gracefully...')
@@ -71,6 +81,8 @@ export class ProcessMonitor {
   }
 
   private logStartup(): void {
+    if (!isNodeEnvironment) return
+
     const memoryUsage = process.memoryUsage()
     console.log('🚀 [ProcessMonitor] Application started:', {
       timestamp: new Date().toISOString(),
@@ -89,6 +101,8 @@ export class ProcessMonitor {
   }
 
   private logShutdown(signal: string): void {
+    if (!isNodeEnvironment) return
+
     const memoryUsage = process.memoryUsage()
     console.log(`🛑 [ProcessMonitor] Application shutting down (${signal}):`, {
       timestamp: new Date().toISOString(),
@@ -104,6 +118,8 @@ export class ProcessMonitor {
   }
 
   public startMemoryMonitoring(intervalMs: number = 30000): void {
+    if (!isNodeEnvironment) return
+
     if (this.monitoringInterval) {
       clearInterval(this.monitoringInterval)
     }
@@ -137,6 +153,8 @@ export class ProcessMonitor {
   }
 
   public logMemoryUsage(context: string = 'Manual'): void {
+    if (!isNodeEnvironment) return
+
     const usage = process.memoryUsage()
     console.log(`📊 [ProcessMonitor] Memory usage (${context}):`, {
       timestamp: new Date().toISOString(),
@@ -152,7 +170,9 @@ export class ProcessMonitor {
 
   public setMemoryThreshold(thresholdMB: number): void {
     this.memoryThreshold = thresholdMB * 1024 * 1024
-    console.log(`📋 [ProcessMonitor] Memory threshold set to ${thresholdMB}MB`)
+    if (isNodeEnvironment) {
+      console.log(`📋 [ProcessMonitor] Memory threshold set to ${thresholdMB}MB`)
+    }
   }
 
   private getUptime(): string {
@@ -172,6 +192,18 @@ export class ProcessMonitor {
   }
 
   public getHealthStatus() {
+    if (!isNodeEnvironment) {
+      return {
+        status: 'browser-environment',
+        timestamp: new Date().toISOString(),
+        uptime: this.getUptime(),
+        memory: null,
+        nodeVersion: null,
+        platform: 'browser',
+        pid: null
+      }
+    }
+
     const usage = process.memoryUsage()
     const uptime = this.getUptime()
     
@@ -192,5 +224,23 @@ export class ProcessMonitor {
   }
 }
 
-// Initialize the monitor
-export const processMonitor = ProcessMonitor.getInstance()
+// Mock object for browser environment
+const mockProcessMonitor = {
+  startMemoryMonitoring: () => {},
+  logMemoryUsage: () => {},
+  setMemoryThreshold: () => {},
+  getHealthStatus: () => ({
+    status: 'browser-environment',
+    timestamp: new Date().toISOString(),
+    uptime: '0h 0m 0s',
+    memory: null,
+    nodeVersion: null,
+    platform: 'browser',
+    pid: null
+  })
+}
+
+// Export the appropriate instance based on environment
+export const processMonitor = isNodeEnvironment 
+  ? ProcessMonitor.getInstance() 
+  : mockProcessMonitor
