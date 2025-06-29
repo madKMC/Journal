@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
-import { Search, Filter, Plus } from 'lucide-react'
+import { Search, Filter, Plus, AlertCircle } from 'lucide-react'
 import { format } from 'date-fns'
 import { Database } from '@/types/database'
 import { processMonitor } from '@/lib/processMonitor'
@@ -36,6 +36,7 @@ export default function DashboardPage() {
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null)
   const [selectedYear, setSelectedYear] = useState<string | null>(null)
   const [promptText, setPromptText] = useState('')
+  const [connectionError, setConnectionError] = useState<string | null>(null)
   const { user } = useAuth()
 
   useEffect(() => {
@@ -54,6 +55,9 @@ export default function DashboardPage() {
     try {
       console.log('📊 [Dashboard] Fetching entries for user:', user.id)
       processMonitor.logMemoryUsage('Before Fetch Entries')
+      
+      // Clear any previous connection errors
+      setConnectionError(null)
 
       const { data, error } = await supabase
         .from('journal_entries')
@@ -61,13 +65,26 @@ export default function DashboardPage() {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
-      if (error) throw error
+      if (error) {
+        console.error('🚨 [Dashboard] Supabase error:', error)
+        throw error
+      }
       
       setEntries(data || [])
       console.log('✅ [Dashboard] Fetched', data?.length || 0, 'entries')
       processMonitor.logMemoryUsage('After Fetch Entries')
-    } catch (error) {
+    } catch (error: any) {
       console.error('🚨 [Dashboard] Error fetching entries:', error)
+      
+      // Set specific error message based on error type
+      if (error.message?.includes('Failed to fetch')) {
+        setConnectionError('Unable to connect to the database. Please check your internet connection and try again.')
+      } else if (error.message?.includes('JWT')) {
+        setConnectionError('Authentication error. Please try logging out and back in.')
+      } else {
+        setConnectionError('Error loading entries. Please try refreshing the page.')
+      }
+      
       toast.error('Error loading entries')
     } finally {
       setLoading(false)
@@ -206,6 +223,12 @@ export default function DashboardPage() {
     setSelectedYear(null)
   }
 
+  const handleRetryConnection = () => {
+    setConnectionError(null)
+    setLoading(true)
+    fetchEntries()
+  }
+
   const uniqueMoods = Array.from(new Set(entries.map(entry => entry.mood).filter(Boolean)))
 
   if (showForm) {
@@ -239,6 +262,24 @@ export default function DashboardPage() {
         
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-6xl mx-auto space-y-8">
+            {/* Connection Error Banner */}
+            {connectionError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <h3 className="font-medium text-red-800 mb-1">Connection Error</h3>
+                  <p className="text-red-700 text-sm mb-3">{connectionError}</p>
+                  <Button
+                    onClick={handleRetryConnection}
+                    size="sm"
+                    className="bg-red-100 hover:bg-red-200 text-red-800 border border-red-300"
+                  >
+                    Try Again
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {/* Writing Prompt Section */}
             <WritingPrompt onUsePrompt={handleUsePrompt} />
 
@@ -349,7 +390,7 @@ export default function DashboardPage() {
                       Showing <span className="font-semibold text-charcoal-800">{filteredEntryCount}</span> {filteredEntryCount === 1 ? 'entry' : 'entries'}
                       {(selectedMonth || selectedYear) && (
                         <span>
-                          {' '}for {selectedMonth && format(new Date(2024, parseInt(selectedMonth) - 1), 'MMMM')} {selectedYear}
+                          {' '}for {selectedMonth && format(new Date(2024, parseInt(selectedMonth) - 1), 'MMMV')} {selectedYear}
                         </span>
                       )}
                     </p>

@@ -28,7 +28,15 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
   },
   global: {
     headers: {
-      'X-Client-Info': 'my-journal-app'
+      'X-Client-Info': 'soulscript-journal-app'
+    }
+  },
+  db: {
+    schema: 'public'
+  },
+  realtime: {
+    params: {
+      eventsPerSecond: 10
     }
   }
 })
@@ -42,5 +50,18 @@ supabase.auth.onAuthStateChange((event, session) => {
     timestamp: new Date().toISOString()
   })
 })
+
+// Test connection on initialization
+supabase.from('journal_entries').select('count', { count: 'exact', head: true })
+  .then(({ error }) => {
+    if (error) {
+      console.error('❌ [Supabase] Connection test failed:', error)
+    } else {
+      console.log('✅ [Supabase] Connection test successful')
+    }
+  })
+  .catch((error) => {
+    console.error('❌ [Supabase] Connection test error:', error)
+  })
 
 console.log('✅ [Supabase] Client initialized successfully')
