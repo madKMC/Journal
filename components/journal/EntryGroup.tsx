@@ -50,47 +50,92 @@ export function EntryGroup({ monthYear, entries, onEdit, onDelete, onView }: Ent
 
   return (
     <div className="space-y-4">
-      {/* Month/Year Header */}
-      <div className="flex items-center justify-between pb-2 border-b border-sage-200/50">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-sage-600" />
-            <h2 className="text-xl font-semibold text-charcoal-800">
-              {formattedMonthYear}
-            </h2>
+      {/* Month/Year Header - Improved Mobile Layout */}
+      <div className="pb-2 border-b border-sage-200/50">
+        {/* Desktop Layout - Single Row */}
+        <div className="hidden sm:flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-sage-600" />
+              <h2 className="text-xl font-semibold text-charcoal-800">
+                {formattedMonthYear}
+              </h2>
+            </div>
+            <Badge variant="secondary" className="bg-sage-100 text-sage-700 border-sage-200">
+              {entries.length} {entries.length === 1 ? 'entry' : 'entries'}
+            </Badge>
           </div>
-          <Badge variant="secondary" className="bg-sage-100 text-sage-700 border-sage-200">
-            {entries.length} {entries.length === 1 ? 'entry' : 'entries'}
-          </Badge>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          {/* Soul State Button */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleShowSoulState}
-            className="border-blushrose-200 text-blushrose-700 hover:bg-blushrose-50"
-          >
-            <Heart className="h-4 w-4 mr-1" />
-            <span className="hidden sm:inline">Soul State</span>
-            <span className="sm:hidden">Soul</span>
-          </Button>
           
-          {/* Month PDF Button */}
-          {entries.length > 1 && (
+          <div className="flex items-center gap-2">
+            {/* Soul State Button */}
             <Button
               variant="outline"
               size="sm"
-              onClick={handleGenerateMonthPDF}
-              disabled={generatingPDF}
-              className="border-mistblue-200 text-mistblue-700 hover:bg-mistblue-50"
+              onClick={handleShowSoulState}
+              className="border-blushrose-200 text-blushrose-700 hover:bg-blushrose-50"
             >
-              <Download className="h-4 w-4 mr-1" />
-              <span className="hidden sm:inline">{generatingPDF ? 'Generating...' : 'Month PDF'}</span>
-              <span className="sm:hidden">{generatingPDF ? '...' : 'PDF'}</span>
+              <Heart className="h-4 w-4 mr-1" />
+              Soul State
             </Button>
-          )}
+            
+            {/* Month PDF Button */}
+            {entries.length > 1 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleGenerateMonthPDF}
+                disabled={generatingPDF}
+                className="border-mistblue-200 text-mistblue-700 hover:bg-mistblue-50"
+              >
+                <Download className="h-4 w-4 mr-1" />
+                {generatingPDF ? 'Generating...' : 'Month PDF'}
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Mobile Layout - Stacked */}
+        <div className="sm:hidden space-y-3">
+          {/* Title and Badge Row */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-sage-600" />
+              <h2 className="text-xl font-semibold text-charcoal-800">
+                {formattedMonthYear}
+              </h2>
+            </div>
+            <Badge variant="secondary" className="bg-sage-100 text-sage-700 border-sage-200">
+              {entries.length} {entries.length === 1 ? 'entry' : 'entries'}
+            </Badge>
+          </div>
+          
+          {/* Action Buttons Row */}
+          <div className="flex items-center gap-2">
+            {/* Soul State Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleShowSoulState}
+              className="border-blushrose-200 text-blushrose-700 hover:bg-blushrose-50 flex-1"
+            >
+              <Heart className="h-4 w-4 mr-1" />
+              Soul State
+            </Button>
+            
+            {/* Month PDF Button */}
+            {entries.length > 1 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleGenerateMonthPDF}
+                disabled={generatingPDF}
+                className="border-mistblue-200 text-mistblue-700 hover:bg-mistblue-50 flex-1"
+              >
+                <Download className="h-4 w-4 mr-1" />
+                {generatingPDF ? 'Generating...' : 'Month PDF'}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
