@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { useAuth } from '@/contexts/AuthContext'
-import { User, LogOut, Settings, PenTool } from 'lucide-react'
+import { User, LogOut, Settings, PenTool, Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 interface HeaderProps {
@@ -33,21 +33,35 @@ export function Header({ onNewEntry }: HeaderProps) {
               <div className="w-8 h-8 bg-mistblue-200 rounded-lg flex items-center justify-center">
                 <span className="text-charcoal-900 font-bold text-sm">S</span>
               </div>
+              {/* Responsive Brand Name */}
               <h1 className="text-xl font-bold text-charcoal-900">
-                SoulScriptJournal
+                <span className="hidden sm:inline">SoulScriptJournal</span>
+                <span className="sm:hidden">SoulScript</span>
               </h1>
             </div>
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             {onNewEntry && (
-              <Button
-                onClick={onNewEntry}
-                className="bg-mistblue-200 hover:bg-darkersage-300 transition-all duration-200 text-charcoal-900"
-              >
-                <PenTool className="h-4 w-4 mr-2" />
-                New Entry
-              </Button>
+              <>
+                {/* Mobile: Icon Only */}
+                <Button
+                  onClick={onNewEntry}
+                  className="bg-mistblue-200 hover:bg-darkersage-300 transition-all duration-200 text-charcoal-900 sm:hidden"
+                  size="sm"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+                
+                {/* Desktop: Icon + Text */}
+                <Button
+                  onClick={onNewEntry}
+                  className="bg-mistblue-200 hover:bg-darkersage-300 transition-all duration-200 text-charcoal-900 hidden sm:flex"
+                >
+                  <PenTool className="h-4 w-4 mr-2" />
+                  New Entry
+                </Button>
+              </>
             )}
 
             <DropdownMenu>
@@ -64,7 +78,7 @@ export function Header({ onNewEntry }: HeaderProps) {
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <div className="flex items-center justify-start gap-2 p-2">
                   <div className="flex flex-col space-y-1 leading-none">
-                    <p className="font-medium text-charcoal-900">{user?.user_metadata?.full_name || 'User'}</p>
+                    <p className="font-medium text-charcoal-900">{user?.user_metadata?.full_name || 'Soul Writer'}</p>
                     <p className="w-[200px] truncate text-sm text-mutedgray-500">
                       {user?.email}
                     </p>

@@ -242,23 +242,30 @@ export default function DashboardPage() {
             {/* Writing Prompt Section */}
             <WritingPrompt onUsePrompt={handleUsePrompt} />
 
-            {/* Search and Filter Section */}
+            {/* Search and Filter Section - Improved Mobile Layout */}
             <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row gap-4 items-center">
-                <div className="relative flex-1">
+              {/* Search Bar - Full Width on Mobile */}
+              <div className="w-full">
+                <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mutedgray-400 h-4 w-4" />
                   <Input
-                    placeholder="Search your entries..."
+                    placeholder="Search your soul's expressions..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 h-11 bg-white/80 backdrop-blur-sm border-sage-200 focus:border-sage-400"
+                    className="pl-10 h-12 bg-white/80 backdrop-blur-sm border-sage-200 focus:border-sage-400 text-base"
                   />
                 </div>
-                <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4 text-mutedgray-500" />
+              </div>
+
+              {/* Filters Row - Stacked on Mobile */}
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                {/* Mood Filter */}
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <Filter className="h-4 w-4 text-mutedgray-500 flex-shrink-0" />
+                  <span className="text-sm font-medium text-charcoal-700 whitespace-nowrap">Mood:</span>
                   <Select value={moodFilter} onValueChange={setMoodFilter}>
-                    <SelectTrigger className="w-40 h-11 bg-white/80 backdrop-blur-sm border-sage-200 focus:border-sage-400">
-                      <SelectValue placeholder="Filter by mood" />
+                    <SelectTrigger className="h-11 bg-white/80 backdrop-blur-sm border-sage-200 focus:border-sage-400 flex-1 sm:w-40">
+                      <SelectValue placeholder="All moods" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All moods</SelectItem>
@@ -270,18 +277,20 @@ export default function DashboardPage() {
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
 
-              {/* Month/Year Filter */}
-              <MonthYearFilter
-                selectedMonth={selectedMonth}
-                selectedYear={selectedYear}
-                availableMonths={availableMonths}
-                availableYears={availableYears}
-                onMonthChange={setSelectedMonth}
-                onYearChange={setSelectedYear}
-                onClear={handleClearDateFilters}
-              />
+                {/* Month/Year Filter Component */}
+                <div className="w-full sm:w-auto">
+                  <MonthYearFilter
+                    selectedMonth={selectedMonth}
+                    selectedYear={selectedYear}
+                    availableMonths={availableMonths}
+                    availableYears={availableYears}
+                    onMonthChange={setSelectedMonth}
+                    onYearChange={setSelectedYear}
+                    onClear={handleClearDateFilters}
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Entries Content */}
@@ -314,13 +323,13 @@ export default function DashboardPage() {
                 <h3 className="text-2xl font-semibold text-charcoal-800 mb-4">
                   {searchTerm || moodFilter !== 'all' || selectedMonth || selectedYear
                     ? 'No entries found'
-                    : 'Start your journaling journey'
+                    : 'Begin your soul\'s journey'
                   }
                 </h3>
-                <p className="text-mutedgray-500 mb-8 max-w-md mx-auto">
+                <p className="text-mutedgray-500 mb-8 max-w-md mx-auto px-4">
                   {searchTerm || moodFilter !== 'all' || selectedMonth || selectedYear
                     ? 'Try adjusting your search or filters to find more entries.'
-                    : 'Create your first entry to begin capturing your thoughts and memories.'
+                    : 'Create your first entry to begin capturing your thoughts and memories with SoulScriptJournal.'
                   }
                 </p>
                 <Button
@@ -328,7 +337,7 @@ export default function DashboardPage() {
                   className="bg-mistblue-200 hover:bg-darkersage-300 text-charcoal-900"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Entry
+                  Express Your Soul
                 </Button>
               </div>
             ) : (
@@ -336,7 +345,7 @@ export default function DashboardPage() {
                 {/* Results summary */}
                 {(searchTerm || moodFilter !== 'all' || selectedMonth || selectedYear) && (
                   <div className="text-center py-4 bg-white/60 rounded-lg border border-sage-200/50">
-                    <p className="text-mutedgray-600">
+                    <p className="text-mutedgray-600 px-4">
                       Showing <span className="font-semibold text-charcoal-800">{filteredEntryCount}</span> {filteredEntryCount === 1 ? 'entry' : 'entries'}
                       {(selectedMonth || selectedYear) && (
                         <span>
