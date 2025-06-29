@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
+// import { Switch } from '@/components/ui/switch'
 import { MoodPrompts } from './MoodPrompts'
 import { RichTextEditor } from './RichTextEditor'
 import { supabase } from '@/lib/supabase'
@@ -78,12 +78,12 @@ export function EntryForm({ entry, onSuccess, onCancel, initialPrompt }: EntryFo
       title: entry?.title || '',
       content: entry?.content || (initialPrompt ? `Prompt: ${initialPrompt}\n\n` : ''),
       mood: entry?.mood || '',
-      is_private: entry?.is_private ?? true,
+      is_private: true, // Always set to private for now
     },
   })
 
   const watchedMood = watch('mood')
-  const watchedIsPrivate = watch('is_private')
+  // const watchedIsPrivate = watch('is_private')
 
   const handleUsePrompt = (prompt: string) => {
     const newContent = content 
@@ -114,6 +114,7 @@ export function EntryForm({ entry, onSuccess, onCancel, initialPrompt }: EntryFo
         ...data,
         content: content, // Use the rich text content
         user_id: user.id,
+        is_private: true, // Force all entries to be private for now
         image_url: entry?.image_url || null,
         updated_at: new Date().toISOString(),
       }
@@ -179,41 +180,42 @@ export function EntryForm({ entry, onSuccess, onCancel, initialPrompt }: EntryFo
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label className="text-base font-medium text-charcoal-700">Mood</Label>
-                <Select value={watchedMood} onValueChange={(value) => setValue('mood', value)}>
-                  <SelectTrigger className="h-12 border-sage-200 focus:border-sage-400">
-                    <SelectValue placeholder="How are you feeling?" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(moodCategories).map(([category, moods]) => (
-                      <SelectGroup key={category}>
-                        <SelectLabel className="text-charcoal-700 font-semibold">{category}</SelectLabel>
-                        {moods.map((mood) => (
-                          <SelectItem key={mood.value} value={mood.value}>
-                            <span className={mood.color}>{mood.label}</span>
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <Label className="text-base font-medium text-charcoal-700">Mood</Label>
+              <Select value={watchedMood} onValueChange={(value) => setValue('mood', value)}>
+                <SelectTrigger className="h-12 border-sage-200 focus:border-sage-400">
+                  <SelectValue placeholder="How are you feeling?" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(moodCategories).map(([category, moods]) => (
+                    <SelectGroup key={category}>
+                      <SelectLabel className="text-charcoal-700 font-semibold">{category}</SelectLabel>
+                      {moods.map((mood) => (
+                        <SelectItem key={mood.value} value={mood.value}>
+                          <span className={mood.color}>{mood.label}</span>
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-              <div className="space-y-2">
-                <Label className="text-base font-medium text-charcoal-700">Privacy</Label>
-                <div className="flex items-center space-x-3 h-12">
-                  <Switch
-                    checked={watchedIsPrivate}
-                    onCheckedChange={(checked) => setValue('is_private', checked)}
-                  />
-                  <span className="text-sm text-mutedgray-500">
-                    {watchedIsPrivate ? 'Private entry' : 'Public entry'}
-                  </span>
-                </div>
+            {/* COMMENTED OUT: Privacy section - will implement later */}
+            {/*
+            <div className="space-y-2">
+              <Label className="text-base font-medium text-charcoal-700">Privacy</Label>
+              <div className="flex items-center space-x-3 h-12">
+                <Switch
+                  checked={watchedIsPrivate}
+                  onCheckedChange={(checked) => setValue('is_private', checked)}
+                />
+                <span className="text-sm text-mutedgray-500">
+                  {watchedIsPrivate ? 'Private entry' : 'Public entry'}
+                </span>
               </div>
             </div>
+            */}
 
             <div className="space-y-2">
               <Label htmlFor="content" className="text-base font-medium text-charcoal-700">
@@ -250,6 +252,7 @@ export function EntryForm({ entry, onSuccess, onCancel, initialPrompt }: EntryFo
                 >
                   Cancel
                 </Button>
+              </Button>
               )}
             </div>
           </form>
