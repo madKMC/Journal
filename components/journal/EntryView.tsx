@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Edit, Lock, Globe, Calendar, Download } from 'lucide-react'
@@ -97,10 +97,12 @@ export function EntryView({ entry, open, onClose, onEdit }: EntryViewProps) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
-        {/* Add DialogTitle for accessibility */}
         <DialogTitle className="sr-only">
           {entry.title}
         </DialogTitle>
+        <DialogDescription className="sr-only">
+          Journal entry from {format(new Date(entry.created_at), 'MMMM d, yyyy')} with {entry.mood ? `${moodLabels[entry.mood] || entry.mood} mood` : 'no mood specified'}
+        </DialogDescription>
         
         {/* Add line gap above the header */}
         <div className="h-4"></div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Calendar, Heart, TrendingUp, BarChart3 } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
@@ -173,6 +173,9 @@ export function SoulStateAnalytics({ entries, monthYear, open, onClose }: SoulSt
         <DialogTitle className="sr-only">
           Soul State Analytics for {formattedMonthYear}
         </DialogTitle>
+        <DialogDescription className="sr-only">
+          Monthly analytics showing mood distribution, emotional balance, and insights for {formattedMonthYear} with {totalMonthEntries} journal entries
+        </DialogDescription>
         
         <div className="space-y-6">
           {/* Header */}
