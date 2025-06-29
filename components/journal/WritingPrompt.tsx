@@ -31,6 +31,12 @@ const categoryColors: Record<string, string> = {
   goals: 'bg-lime-100 text-lime-800',
   courage: 'bg-green-100 text-green-800',
   general: 'bg-mutedgray-100 text-mutedgray-800',
+  // Good mood categories
+  happy: 'bg-yellow-100 text-yellow-800',
+  excited: 'bg-purple-100 text-purple-800',
+  peaceful: 'bg-sage-100 text-sage-800',
+  grateful: 'bg-blushrose-100 text-blushrose-800',
+  energetic: 'bg-red-100 text-red-800',
 }
 
 export function WritingPrompt({ onUsePrompt }: WritingPromptProps) {
@@ -40,9 +46,13 @@ export function WritingPrompt({ onUsePrompt }: WritingPromptProps) {
   const fetchRandomPrompt = async () => {
     setLoading(true)
     try {
+      // Only fetch prompts from "good mood" categories and general
+      const goodMoodCategories = ['happy', 'excited', 'peaceful', 'grateful', 'energetic', 'general']
+      
       const { data, error } = await supabase
         .from('writing_prompts')
         .select('*')
+        .in('category', goodMoodCategories)
         .order('created_at', { ascending: false })
 
       if (error) throw error
