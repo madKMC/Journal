@@ -1,10 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Edit, Lock, Globe, Calendar, Download, X } from 'lucide-react'
+import { Edit, Lock, Globe, Calendar, Download } from 'lucide-react'
 import { format } from 'date-fns'
 import { generateEntryPDF } from '@/lib/pdfGenerator'
 import { toast } from 'sonner'
@@ -97,6 +97,11 @@ export function EntryView({ entry, open, onClose, onEdit }: EntryViewProps) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
+        {/* Add DialogTitle for accessibility */}
+        <DialogTitle className="sr-only">
+          {entry.title}
+        </DialogTitle>
+        
         {/* Custom header with proper button positioning */}
         <div className="flex items-start justify-between p-6 pb-4 pr-16">
           <div className="flex-1 min-w-0 pr-4">
